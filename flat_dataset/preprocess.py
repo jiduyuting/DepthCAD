@@ -43,7 +43,7 @@ def load_raw(scene, sqrt_in=True):
     return tof_IQs
 
 
-def compute_gradient_confidence(depth_map):
+def  compute_gradient_confidence(depth_map):
     grad_x = cv2.Sobel(depth_map, cv2.CV_64F, 1, 0, ksize=5)
     grad_y = cv2.Sobel(depth_map, cv2.CV_64F, 0, 1, ksize=5)
     grad_magnitude = np.sqrt(grad_x**2 + grad_y**2)
@@ -55,17 +55,17 @@ def compute_gradient_confidence(depth_map):
 
 
 if __name__ == '__main__':
-    root = '/Path/to/FLAT/Ideal/Dir'
+    root = '/home/lab507/Documents/JishenLin/GLRUN/FLAT/ideal'
     idxs = os.listdir(root)
     idxs.sort()
 
-    ideal_root = '/Path/to/FLAT/Ideal/Dir'
+    ideal_root = '/home/lab507/Documents/JishenLin/GLRUN/FLAT/ideal'
     ideal_norm_root = 'data/ideal_IQ'
 
-    noise_root = '/Path/to/FLAT/Noise/Dir'
+    noise_root = '/home/lab507/Documents/JishenLin/GLRUN/FLAT/noise'
     noise_norm_root = 'data/noise_IQ'
 
-    noise_depth_root = '/Path/to/FLAT/Noise/Depth/Dir'
+    noise_depth_root = '/data/pre_student/hcy/ControlNet/data/noise_depth'
     conf_root = 'data/confidence'
     
     roots_to_check = [ideal_norm_root, noise_norm_root, conf_root]

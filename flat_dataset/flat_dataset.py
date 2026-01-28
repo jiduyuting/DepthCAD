@@ -49,10 +49,10 @@ class FLATDataset(datasets.GeneratorBasedBuilder):
                 name=datasets.Split.TRAIN,
 
                 gen_kwargs={
-                    "metadata_path": "flat_dataset/train.jsonl",
-                    "ideal_IQ_dir": "data/ideal_IQ",
-                    "noise_IQ_dir": "data/noise_IQ",
-                    "conf_dir": "data/confidence"
+                    "metadata_path": "/data/pre_student/GJ/DepthCAD/flat_dataset/data/train.jsonl",
+                    "ideal_IQ_dir": "/data/pre_student/GJ/DepthCAD/flat_dataset/data/ideal_IQ",
+                    "noise_IQ_dir": "/data/pre_student/GJ/DepthCAD/flat_dataset/data/noise_IQ",
+                    "conf_dir": "/data/pre_student/GJ/DepthCAD/flat_dataset/data/confidence"
                 },
             ),
         ]

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import accelerate
 import numpy as np
+import gc
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
@@ -32,6 +33,41 @@ from diffusers.utils.import_utils import is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
 
 logger = get_logger(__name__)
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
+
+def scale_invariant_gradient_loss(pred, target, reduction='mean'):
+    """
+    Scale-Invariant Gradient Matching Loss
+
+    计算预测和目标之间的梯度差异，使模型更好地学习边缘和结构信息。
+
+    Args:
+        pred: 预测的张量 [B, C, H, W]
+        target: 目标张量 [B, C, H, W]
+        reduction: 'mean', 'sum', 或 'none'
+
+    Returns:
+        梯度损失值
+    """
+    # 计算x方向的梯度 (右 - 左)
+    pred_dx = pred[:, :, :, :-1] - pred[:, :, :, 1:]
+    target_dx = target[:, :, :, :-1] - target[:, :, :, 1:]
+
+    # 计算y方向的梯度 (下 - 上)
+    pred_dy = pred[:, :, :-1, :] - pred[:, :, 1:, :]
+    target_dy = target[:, :, :-1, :] - target[:, :, 1:, :]
+
+    # 计算L1损失 (对异常值更鲁棒)
+    loss_dx = torch.abs(pred_dx - target_dx)
+    loss_dy = torch.abs(pred_dy - target_dy)
+
+    if reduction == 'mean':
+        return loss_dx.mean() + loss_dy.mean()
+    elif reduction == 'sum':
+        return loss_dx.sum() + loss_dy.sum()
+    else:
+        return loss_dx + loss_dy
 
 
 def import_model_class_from_model_name_or_path(pretrained_model_name_or_path: str, revision: str):
@@ -95,7 +131,7 @@ def parse_args(input_args=None):
     )
     parser.add_argument("--seed", type=int, default=None, help="A seed for reproducible training.")
     parser.add_argument(
-        "--resolution",
+        "--resolution", 
         type=int,
         default=512,
         help=(
@@ -175,7 +211,20 @@ def parse_args(input_args=None):
     parser.add_argument("--adam_weight_decay", type=float, default=1e-2, help="Weight decay to use.")
     parser.add_argument("--adam_epsilon", type=float, default=1e-08, help="Epsilon value for the Adam optimizer")
     parser.add_argument("--max_grad_norm", default=1.0, type=float, help="Max gradient norm.")
- 
+
+    parser.add_argument(
+        "--gradient_loss_weight",
+        type=float,
+        default=0.1,
+        help="Weight for the scale-invariant gradient loss. Set to 0 to disable.",
+    )
+    parser.add_argument(
+        "--mse_loss_weight",
+        type=float,
+        default=1.0,
+        help="Weight for the MSE loss.",
+    )
+
     parser.add_argument(
         "--logging_dir",
         type=str,
@@ -228,6 +277,14 @@ def parse_args(input_args=None):
         ),
     )
     parser.add_argument(
+        "--dataset_config",
+        type=str,
+        default="default",
+        help=(
+            "The configuration of the dataset to use (e.g., 'default' for no mask, 'masked' for with mask)."
+        ),
+    )
+    parser.add_argument(
         "--tracker_project_name",
         type=str,
         default="train_depthcad",
@@ -248,7 +305,8 @@ def parse_args(input_args=None):
 def make_train_dataset(args, tokenizer, accelerator):
     dataset = load_dataset(
         args.dataset_name,
-        None,
+        args.dataset_config,
+        trust_remote_code=True,
         cache_dir=args.cache_dir,
     )
 
@@ -273,12 +331,39 @@ def make_train_dataset(args, tokenizer, accelerator):
     )
 
     def preprocess_train(examples):
-        ideals = [data_transforms(np.repeat(np.expand_dims(np.load(ideal_IQ_path), axis=0), 3, axis=0)) for ideal_IQ_path in examples["ideal_IQ_path"]]            
-        noises = [data_transforms(np.expand_dims(np.load(noise_IQ_path), axis=0)) for noise_IQ_path in examples["noise_IQ_path"]]
-        confs = [data_transforms(np.expand_dims(np.load(conf_path), axis=0)) for conf_path in examples["conf_path"]]
+        import cv2
+        target_size = (args.resolution, args.resolution)
 
-        examples["ideals"] = ideals   
-        examples["noises"] = noises 
+        ideals = []
+        for ideal_IQ_path in examples["ideal_IQ_path"]:
+            data = np.load(ideal_IQ_path)
+            # Resize to target resolution if needed
+            if data.shape[:2] != (args.resolution, args.resolution):
+                data = cv2.resize(data, target_size, interpolation=cv2.INTER_LINEAR)
+            # Repeat to 3 channels
+            data = np.repeat(np.expand_dims(data, axis=0), 3, axis=0)
+            ideals.append(data_transforms(data))
+
+        noises = []
+        for noise_IQ_path in examples["noise_IQ_path"]:
+            data = np.load(noise_IQ_path)
+            # Resize to target resolution if needed
+            if data.shape[:2] != (args.resolution, args.resolution):
+                data = cv2.resize(data, target_size, interpolation=cv2.INTER_LINEAR)
+            data = np.expand_dims(data, axis=0)
+            noises.append(data_transforms(data))
+
+        confs = []
+        for conf_path in examples["conf_path"]:
+            data = np.load(conf_path)
+            # Resize to target resolution if needed
+            if data.shape[:2] != (args.resolution, args.resolution):
+                data = cv2.resize(data, target_size, interpolation=cv2.INTER_LINEAR)
+            data = np.expand_dims(data, axis=0)
+            confs.append(data_transforms(data))
+
+        examples["ideals"] = ideals
+        examples["noises"] = noises
         examples["confs"] = confs
         examples["input_ids"] = tokenize_captions(examples)
 
@@ -321,6 +406,41 @@ def main(args):
         log_with=args.report_to,
         project_config=accelerator_project_config,
     )
+
+    # Try to free python-side refs and GPU cache before allocating large models
+    try:
+        gc.collect()
+    except Exception:
+        pass
+    if torch.cuda.is_available():
+        try:
+            torch.cuda.empty_cache()
+        except Exception:
+            pass
+        # Log basic CUDA memory stats for debugging OOMs
+        try:
+            dev = torch.cuda.current_device()
+            props = torch.cuda.get_device_properties(dev)
+            total_gb = props.total_memory / (1024 ** 3)
+            reserved_gb = torch.cuda.memory_reserved(dev) / (1024 ** 3)
+            allocated_gb = torch.cuda.memory_allocated(dev) / (1024 ** 3)
+            logger.info(
+                f"CUDA device {dev} memory (GB) - total: {total_gb:.2f}, reserved: {reserved_gb:.2f}, allocated: {allocated_gb:.2f}"
+            )
+        except Exception as e:
+            logger.warning(f"Unable to query CUDA memory stats: {e}")
+
+    # Warn if requested effective total batch size is very large (common OOM cause)
+    try:
+        effective_total_batch = args.train_batch_size * getattr(accelerator, "num_processes", 1) * args.gradient_accumulation_steps
+        if effective_total_batch >= 32:
+            logger.warning(
+                "Effective total batch size (%d) is large and may cause CUDA OOM. "
+                "Consider lowering --train_batch_size or --gradient_accumulation_steps.",
+                effective_total_batch,
+            )
+    except Exception:
+        pass
 
     # Disable AMP for MPS.
     if torch.backends.mps.is_available():
@@ -631,7 +751,15 @@ def main(args):
                     target = noise_scheduler.get_velocity(latents, noise, timesteps)
                 else:
                     raise ValueError(f"Unknown prediction type {noise_scheduler.config.prediction_type}")
-                loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
+
+                # 计算MSE损失
+                mse_loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
+
+                # 计算尺度不变梯度损失
+                grad_loss = scale_invariant_gradient_loss(model_pred.float(), target.float(), reduction="mean")
+
+                # 结合两个损失
+                loss = args.mse_loss_weight * mse_loss + args.gradient_loss_weight * grad_loss
 
                 accelerator.backward(loss)
                 if accelerator.sync_gradients:
@@ -652,7 +780,12 @@ def main(args):
                         accelerator.save_state(save_path)
                         logger.info(f"Saved state to {save_path}")
 
-            logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
+            logs = {
+                "loss": loss.detach().item(),
+                "mse_loss": mse_loss.detach().item(),
+                "grad_loss": grad_loss.detach().item(),
+                "lr": lr_scheduler.get_last_lr()[0]
+            }
             progress_bar.set_postfix(**logs)
             accelerator.log(logs, step=global_step)
 

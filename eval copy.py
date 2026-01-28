@@ -2,18 +2,6 @@ import os
 import argparse
 import numpy as np
 import csv
-import cv2
-
-# Try to import mask-enabled preprocessing
-try:
-    from pbrt_dataset.process_mask import load_raw as load_raw_with_mask, compute_gradient_confidence
-    MASK_AVAILABLE = True
-except ImportError:
-    try:
-        from DepthCAD.pbrt_dataset.preprocess import load_raw as load_raw_with_mask, compute_gradient_confidence
-        MASK_AVAILABLE = True
-    except ImportError:
-        MASK_AVAILABLE = False
 
 def data_loader(path):
     if not os.path.exists(path):
@@ -67,19 +55,14 @@ def find_matching_gt(pred_rel_path, gt_dir):
 
     return None
 
-def loss(pred, ideal, amp_mask=None):
+def loss(pred, ideal):
     t_valid = 0.001
     t_max = 9
-
+    
     pred[pred >= t_max] = 0
     pred[pred < t_valid] = 0
 
-    mask = (ideal > t_valid) & (ideal < t_max)
-
-    # If amplitude mask is provided, exclude masked regions from evaluation
-    if amp_mask is not None:
-        mask = mask & (~amp_mask)
-
+    mask = (ideal > t_valid) & (ideal < t_max) 
     num_valid = mask.sum()
 
     if num_valid == 0:
@@ -105,44 +88,9 @@ def loss(pred, ideal, amp_mask=None):
 
     return [mae, rel, del_1, del_2, del_3]
 
-
-def compute_amplitude_mask(noise_iq_path, target_size=(240, 320)):
-    """
-    Compute amplitude mask from noise IQ file.
-    Uses the same logic as training/inference.
-    """
-    if not MASK_AVAILABLE:
-        print("Warning: Mask preprocessing not available, returning None")
-        return None
-
-    try:
-        # Use same parameters as inference: adaptive 5% threshold + 99.5% upper percentile
-        noise_result = load_raw_with_mask(noise_iq_path, target_size=target_size, sqrt_in=True,
-                                          amplitude_threshold=None, upper_percentile=99.5)
-        if isinstance(noise_result, tuple):
-            _, amp_mask = noise_result
-        else:
-            amp_mask = None
-        return amp_mask
-    except Exception as e:
-        print(f"Warning: Failed to compute amplitude mask for {noise_iq_path}: {e}")
-        return None
-
-def eval(pred_dir, out_dir, gt_dir, noise_iq_dir=None, use_mask=False):
+def eval(pred_dir, out_dir, gt_dir):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-
-    if use_mask:
-        if noise_iq_dir is None:
-            print("Warning: use_mask=True but noise_iq_dir not provided, falling back to no mask mode")
-            use_mask = False
-        elif not MASK_AVAILABLE:
-            print("Warning: Mask preprocessing not available, falling back to no mask mode")
-            use_mask = False
-
-    if use_mask:
-        print(f"Mask mode enabled: will exclude low-amplitude regions from evaluation")
-        print(f"Noise IQ directory: {noise_iq_dir}")
 
     loss_mae, loss_rel = [], []
     loss_del_1, loss_del_2, loss_del_3 = [], [], []
@@ -192,27 +140,8 @@ def eval(pred_dir, out_dir, gt_dir, noise_iq_dir=None, use_mask=False):
                 pred = data_loader(pred_full_path)
                 ideal = data_loader(gt_full_path)
 
-                # 2.5. 计算掩码（如果启用）
-                amp_mask = None
-                if use_mask:
-                    # Construct path to noise IQ file
-                    # pred_rel_path format: bathroom/1/100.npy
-                    # noise_iq format: bathroom/1/100.npy (9 channels)
-                    base_rel = os.path.splitext(rel_path)[0]  # remove .npy
-                    noise_iq_path = os.path.join(noise_iq_dir, base_rel + ".npy")
-
-                    if os.path.exists(noise_iq_path):
-                        amp_mask = compute_amplitude_mask(noise_iq_path, target_size=pred.shape)
-                        if amp_mask is not None and success_count == 0:
-                            masked_pct = 100.0 * np.count_nonzero(amp_mask) / amp_mask.size
-                            print(f"  Noise IQ: {noise_iq_path}")
-                            print(f"  Amplitude mask: {masked_pct:.2f}% pixels excluded")
-                    else:
-                        if success_count == 0:
-                            print(f"  Warning: Noise IQ file not found: {noise_iq_path}")
-
                 # 3. 计算 Loss
-                loss_list = loss(pred, ideal, amp_mask=amp_mask)
+                loss_list = loss(pred, ideal)
 
                 loss_mae.append(loss_list[0])
                 loss_rel.append(loss_list[1])
@@ -252,15 +181,13 @@ def eval(pred_dir, out_dir, gt_dir, noise_iq_dir=None, use_mask=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    # 【修复】把参数加回来，设为可选（这样你的旧命令就不会报错了）
     parser.add_argument("--test_list_path", type=str, default=None, help="Not used in this version (auto-scan)")
     parser.add_argument("--out_dir", type=str, required=True)
     parser.add_argument("--pred_dir", type=str, required=True)
     parser.add_argument("--gt_dir", type=str, default="/data/pre_student/hcy/pbrt/gt_depth")
-
-    # Mask mode arguments
-    parser.add_argument("--use_mask", action="store_true", help="Enable mask mode: exclude low-amplitude regions from evaluation")
-    parser.add_argument("--noise_iq_dir", type=str, default="/data/pre_student/hcy/pbrt/noise", help="Directory containing noise IQ files (for mask computation)")
-
+    
     args = parser.parse_args()
 
-    eval(args.pred_dir, args.out_dir, args.gt_dir, noise_iq_dir=args.noise_iq_dir, use_mask=args.use_mask)
+    # 这里的参数里虽然有 test_list_path，但我们不传给 eval 函数，eval 自己会去扫描文件夹
+    eval(args.pred_dir, args.out_dir, args.gt_dir)

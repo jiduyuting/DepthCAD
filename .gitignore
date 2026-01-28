@@ -1,3 +1,12 @@
 **/__pycache__/
 /output/
 /results/
+/flat_dataset/data/
+/pbrt/
+/pbrt_dataset/data/
+/pbrt_dataset/data_512/
+/pbrt_dataset/data_old/
+/z_image_turbo_analysis/
+HYPIR_sd2.pth
+/out_pbrt/
+/out/
