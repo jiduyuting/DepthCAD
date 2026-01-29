@@ -1,6 +1,8 @@
 export HF_ENDPOINT=https://hf-mirror.com
 export CUDA_VISIBLE_DEVICES=0
-MODEL_DIR="stabilityai/stable-diffusion-2-1"
+MODEL_DIR="/home/lab507/.cache/huggingface/hub/models--stabilityai--stable-diffusion-2-1/snapshots/5cae40e6a2745ae2b01ad92ae5043f95f23644d6"
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
 DEPTHCAD_PATH="/data/pre_student/GJ/DepthCAD/output/depthcad_pbrt_marigold_1_27/checkpoint-10000/depthcad"
 TEST_LIST_PATH="/data/pre_student/GJ/DepthCAD/pbrt_dataset/test.txt"
 NOISE_IQ_DIR="/data/pre_student/hcy/pbrt/noise"
@@ -11,6 +13,7 @@ OUT_DIR="/data/pre_student/GJ/DepthCAD/pbrt/data_marigold_1_27_10000"
 DATASET_TYPE="pbrt"
 TARGET_HEIGHT=240
 TARGET_WIDTH=320
+NUM_CHANNELS=6  # Must match training: 6 for enhanced features, 2 for original
 
 mkdir -p "$OUT_DIR"
 
@@ -91,7 +94,8 @@ process_sample() {
         --noise_depth_file "$noise_depth_file" \
         --out_file "$out_file" \
         --dataset_type "$DATASET_TYPE" \
-        --target_size "$TARGET_HEIGHT" "$TARGET_WIDTH"; then
+        --target_size "$TARGET_HEIGHT" "$TARGET_WIDTH" \
+        --num_channels "$NUM_CHANNELS"; then
         echo "[SUCCESS] [$local_current/$local_total] Completed: $sample_path"
         return 0
     else

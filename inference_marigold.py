@@ -131,6 +131,12 @@ def parse_args(input_args=None):
         default=[240, 320],
         help="Target size for resizing (height, width)"
     )
+    parser.add_argument(
+        "--num_channels",
+        type=int,
+        default=None,
+        help="Number of ControlNet input channels (2 or 6). If None, auto-detect from model."
+    )
 
     args = parser.parse_args()
     return args
@@ -276,6 +282,7 @@ if __name__ == '__main__':
     out_file = args.out_file
     dataset_type = args.dataset_type
     target_size = tuple(args.target_size)
+    num_channels = args.num_channels
     
     print("=" * 60)
     print("DepthCAD Inference")
@@ -368,9 +375,14 @@ if __name__ == '__main__':
     print("\nLoading DepthCAD model...")
     depthcad = ControlNetModel.from_pretrained(depthcad_path, torch_dtype=torch.float16)
 
-    # Detect number of input channels for ControlNet
-    num_channels = depthcad.controlnet_cond_embedding.conv_in.in_channels
-    print(f"Detected ControlNet input channels: {num_channels}")
+    # Determine number of input channels for ControlNet
+    if num_channels is not None:
+        # User specified, use it
+        print(f"Using specified ControlNet input channels: {num_channels}")
+    else:
+        # Auto-detect from model
+        num_channels = depthcad.controlnet_cond_embedding.conv_in.in_channels
+        print(f"Detected ControlNet input channels: {num_channels}")
 
     pipe = StableDiffusionControlNetPipeline.from_pretrained(
         base_model_path, controlnet=depthcad, torch_dtype=torch.float16

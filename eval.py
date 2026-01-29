@@ -67,6 +67,58 @@ def find_matching_gt(pred_rel_path, gt_dir):
 
     return None
 
+def scale_alignment(pred, ideal, method='median'):
+    """
+    对预测深度进行尺度对齐，使其与 GT 深度尺度匹配。
+
+    Args:
+        pred: 预测深度图 [H, W]
+        ideal: GT 深度图 [H, W]
+        method: 对齐方法
+            - 'median': 中位数对齐 (推荐，速度快)
+            - 'linear': 线性回归对齐 (更精确但稍慢)
+            - 'none': 不进行对齐
+
+    Returns:
+        对齐后的预测深度图
+    """
+    if method == 'none':
+        return pred
+
+    # 创建有效掩码 (排除无效值)
+    valid_mask = (ideal > 0.001) & (ideal < 9) & (pred > 0.001) & (pred < 9)
+
+    if not valid_mask.any():
+        return pred
+
+    pred_valid = pred[valid_mask]
+    ideal_valid = ideal[valid_mask]
+
+    if method == 'median':
+        # 中位数对齐: pred * (ideal_median / pred_median)
+        pred_median = np.median(pred_valid)
+        ideal_median = np.median(ideal_valid)
+
+        if pred_median > 1e-8:
+            scale = ideal_median / pred_median
+            print(f"  [Scale Alignment] pred_median={pred_median:.4f}, ideal_median={ideal_median:.4f}, scale={scale:.4f}")
+            return pred * scale
+        else:
+            return pred
+
+    elif method == 'linear':
+        # 线性回归对齐: pred * slope + intercept
+        # 使用最小二乘法
+        A = np.vstack([pred_valid, np.ones(len(pred_valid))]).T
+        slope, intercept = np.linalg.lstsq(A, ideal_valid, rcond=None)[0]
+        print(f"  [Scale Alignment] linear: slope={slope:.4f}, intercept={intercept:.4f}")
+        return pred * slope + intercept
+
+    else:
+        print(f"  Warning: Unknown scale alignment method '{method}', skipping alignment")
+        return pred
+
+
 def loss(pred, ideal, amp_mask=None):
     t_valid = 0.001
     t_max = 9
@@ -128,7 +180,7 @@ def compute_amplitude_mask(noise_iq_path, target_size=(240, 320)):
         print(f"Warning: Failed to compute amplitude mask for {noise_iq_path}: {e}")
         return None
 
-def eval(pred_dir, out_dir, gt_dir, noise_iq_dir=None, use_mask=False):
+def eval(pred_dir, out_dir, gt_dir, noise_iq_dir=None, use_mask=False, scale_method='median'):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
@@ -191,6 +243,10 @@ def eval(pred_dir, out_dir, gt_dir, noise_iq_dir=None, use_mask=False):
 
                 pred = data_loader(pred_full_path)
                 ideal = data_loader(gt_full_path)
+
+                # 2.5. 尺度对齐 (如果启用)
+                if scale_method != 'none':
+                    pred = scale_alignment(pred, ideal, method=scale_method)
 
                 # 2.5. 计算掩码（如果启用）
                 amp_mask = None
@@ -261,6 +317,10 @@ if __name__ == "__main__":
     parser.add_argument("--use_mask", action="store_true", help="Enable mask mode: exclude low-amplitude regions from evaluation")
     parser.add_argument("--noise_iq_dir", type=str, default="/data/pre_student/hcy/pbrt/noise", help="Directory containing noise IQ files (for mask computation)")
 
+    # Scale alignment arguments
+    parser.add_argument("--scale_method", type=str, default='median', choices=['none', 'median', 'linear'],
+                        help="Method for scale alignment: 'none' (no alignment), 'median' (median alignment), 'linear' (linear regression)")
+
     args = parser.parse_args()
 
-    eval(args.pred_dir, args.out_dir, args.gt_dir, noise_iq_dir=args.noise_iq_dir, use_mask=args.use_mask)
+    eval(args.pred_dir, args.out_dir, args.gt_dir, noise_iq_dir=args.noise_iq_dir, use_mask=args.use_mask, scale_method=args.scale_method)
