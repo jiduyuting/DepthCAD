@@ -366,13 +366,68 @@ test，或者先定位 NaN 的数据/数值原因。
 
 ### 7.4 环境版本
 
-当前服务器实际使用的是两个环境：
+当前服务器实际使用的是两个环境。Flow 代码本身不绑定某个环境；`control` 环境可以正常导入和运行 Flow。为了复现实验，仍应按启动器的默认值选择环境：完整 PBRT/SOTA Flow 多数使用 `SVDC`，real raw9 和部分微调脚本使用 `control`。
 
 | 用途 | 关键版本 |
 | --- | --- |
-| Flow（`SVDC`） | PyTorch 1.12.0+cu113、torchvision 0.13.0、NumPy 1.20.3、OpenCV 4.6、matplotlib 3.6、SciPy 1.9、PyWavelets 1.4 |
+| Flow（完整 PBRT 默认 `SVDC`；`control` 也兼容） | PyTorch 1.12.0+cu113、torchvision 0.13.0、NumPy 1.20.3、OpenCV 4.6、matplotlib 3.6、SciPy 1.9、PyWavelets 1.4 |
 | DepthCAD（`control`） | PyTorch 2.4.0+cu121、torchvision 0.19.0、diffusers 0.31.0、transformers 4.44.2、accelerate 0.34.0、datasets 2.21.0、xformers 0.0.27.post2、bitsandbytes 0.43.3 |
 
 Flow 训练主要依赖 PyTorch、NumPy、OpenCV 和 matplotlib；DepthCAD 全量训练还
 必须使用 `datasets<4`、xformers 和与显卡驱动匹配的 CUDA 版 PyTorch。迁移时建议
 分别建立两个虚拟环境，不要把两个环境的 PyTorch/CUDA 版本混装。
+
+如果要在 `control` 环境运行 Flow，可显式覆盖启动器的解释器，例如：
+
+```bash
+PYTHON_BIN=/home/lab507/anaconda3/envs/control/bin/python \
+  bash scripts/runs/flow/run_real_raw9_flow_infer_split_added_ns.sh
+```
+
+## 8. 传输到 H200-4
+
+H200-4 的 SSH 参数为：
+
+```text
+HostName 47.101.174.157
+Port 31343
+User root
+```
+
+先在本机 `~/.ssh/config` 中加入一个别名，并确认远端已经安装本机公钥（或准备好
+远端接受的私钥）：
+
+```sshconfig
+Host H200-4
+    HostName 47.101.174.157
+    Port 31343
+    User root
+    IdentityFile ~/.ssh/id_rsa
+    IdentitiesOnly yes
+```
+
+然后测试：
+
+```bash
+ssh H200-4 'nvidia-smi --query-gpu=name,memory.total --format=csv,noheader'
+```
+
+认证成功后，从当前服务器优先传 Flow 资源（约 35G 缓存加少量权重）：
+
+```bash
+SRC=/data/pre_student/GJ/DepthCAD
+DEST=H200-4:/data/DepthCAD
+
+ssh H200-4 'mkdir -p /data/DepthCAD/depth_completion_cache /data/DepthCAD/output'
+rsync -a --info=progress2 --partial --append-verify \
+  "$SRC/depth_completion_cache/depth_cache_full_pbrt_plane_r12_iq" \
+  "$DEST/depth_completion_cache/"
+rsync -a --partial --append-verify "$SRC/output/full_pbrt_flow_lists_iq" "$DEST/output/"
+rsync -a --partial --append-verify "$SRC/output/depth_flow_full_pbrt_iq_endpoint_w2" "$DEST/output/"
+rsync -a --partial --append-verify "$SRC/output/depth_flow_full_pbrt_iq_propagation_refine" "$DEST/output/"
+```
+
+如果要迁移 DepthCAD 推理模型，再复制 SD2.1 基础模型和安全的
+`checkpoint-20000/depthcad`。完整 PBRT 数据集约 167G，训练 checkpoint 输出约
+400G，不建议一次性整体传输；应按实验需要分批复制。断线后重复执行上述
+`rsync` 命令即可续传。
