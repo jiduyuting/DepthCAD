@@ -1,3 +1,4 @@
+import _bootstrap
 import argparse
 import json
 from pathlib import Path

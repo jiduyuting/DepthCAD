@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import _bootstrap
 import argparse
 import json
 import math

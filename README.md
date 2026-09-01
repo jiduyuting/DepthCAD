@@ -12,6 +12,8 @@ A PyTorch implementation of Depth Denoising with Confidence-Aware Diffusion mode
 - `configs/`, `integrations/`, `pbrt_dataset/`, `flat_dataset/`: reusable project modules.
 
 Datasets, model weights, caches, generated outputs, and local papers are intentionally kept outside Git tracking. See `.gitignore` before adding new files.
+
+For a complete migration and run guide, see [`docs/README.md`](docs/README.md).
 ## Environment Setup
 ### Clone this directory
 ```

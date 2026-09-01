@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Precompute frozen Flow outputs used by propagation-refine training."""
 
+import _bootstrap
 import argparse
 import json
 import os
