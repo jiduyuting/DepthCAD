@@ -4,9 +4,9 @@ A PyTorch implementation of Depth Denoising with Confidence-Aware Diffusion mode
 
 ## Repository Layout
 
-- `train_*.py`, `infer_*.py`, `eval_*.py`: training, inference, and evaluation entry points.
-- `run_*.sh`: reproducible experiment launchers.
-- `scripts/`: dataset preparation, comparison, and visualization utilities.
+- `scripts/*.py`: training, inference, and evaluation entry points.
+- `scripts/runs/*.sh`: reproducible experiment launchers.
+- `scripts/data_prep/`, `scripts/analysis/`, `scripts/tests/`: dataset preparation, analysis, and smoke-test utilities.
 - `docs/reports/`: experiment plans, benchmark reports, and result notes.
 - `configs/`, `integrations/`, `pbrt_dataset/`, `flat_dataset/`: reusable project modules.
 
@@ -14,7 +14,7 @@ Datasets, model weights, caches, generated outputs, and local papers are intenti
 ## Environment Setup
 ### Clone this directory
 ```
-git clone https://github.com/BadbeardHe/DepthCAD.git
+git clone https://github.com/jiduyuting/DepthCAD.git
 ```
 ### Install Dependencies
 Ensure your environment has Python 3.9 or later installed. Use the following command to install required dependencies:
@@ -39,7 +39,7 @@ accelerate config
 ### Training
 Run the following command to start model training:
 ```
-accelerate launch train.py \
+accelerate launch scripts/train_pbrt.py \
     --pretrained_model_name_or_path "/Path/to/Stable/Diffusion/model" \
     --output_dir "/Path/to/trained/DepthCAD/models/directory" \
     --dataset_name="flat_dataset" \
@@ -60,7 +60,7 @@ accelerate launch train.py \
 ### Inferencing
 Run the following command to inference a single scene:
 ```
-python inference.py \
+python scripts/inference_pbrt.py \
     --pretrained_model_name_or_path "/Path/to/Stable/Diffusion/model" \
     --depthcad_path "/Path/to/trained/DepthCAD/model" \
     --noise_IQ_file "/Path/to/noise/IQ/file" \
@@ -71,7 +71,7 @@ python inference.py \
 ### Evaluation
 Evaluate trained model using the command:
 ```
-python eval.py \
+python scripts/eval_pbrt.py \
     --test_list_path "/Path/to/test/list" \
     --out_dir "/Path/to/result/dir" \
     --pred_dir "/Path/to/predicted/depth/dir"

@@ -7,7 +7,7 @@
 脚本：
 
 ```bash
-/home/lab507/anaconda3/envs/control/bin/python benchmark_far_pic_depth_completion.py
+/home/lab507/anaconda3/envs/control/bin/python scripts/benchmark_far_pic_depth_completion.py
 ```
 
 输入：

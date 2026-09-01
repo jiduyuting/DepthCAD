@@ -5,7 +5,7 @@
 ## 数据检查
 
 - `depth/noise/depth_png/list` 中 503 个样本配对完整。
-- `noise/*.npy` 是 `(9, 424, 512)` raw9/IR 条件输入，可直接给 `infer_real_raw9_flow.py`。
+- `noise/*.npy` 是 `(9, 424, 512)` raw9/IR 条件输入，可直接给 `scripts/infer_real_raw9_flow.py`。
 - `depth/*.npy` 单位混合：`ceiling/desk/plant` 已是米，`lab307_*` 和 `library_*` 是毫米。测试输入已统一转换成米。
 - 全部 503 张形状和基础质量检查通过；本轮没有直接全量跑，先选 15 张代表样本做 smoke test。
 
@@ -41,7 +41,7 @@
 Raw9+depth satclip：
 
 ```bash
-/home/lab507/anaconda3/envs/depthcad_zimage/bin/python infer_real_raw9_flow.py \
+/home/lab507/anaconda3/envs/depthcad_zimage/bin/python scripts/infer_real_raw9_flow.py \
   --raw_dir output/pbrt_real_new_selection/selected/raw9_chw \
   --depth_dir output/pbrt_real_new_selection/selected/depth_m \
   --checkpoint output/real_raw9_flow_finetune_overexposure_satclip_from_generalized_e20/best.pt \
@@ -57,7 +57,7 @@ Raw9+depth satclip：
 Depth-only baseline：
 
 ```bash
-/home/lab507/anaconda3/envs/depthcad_zimage/bin/python infer_real_depth_flow.py \
+/home/lab507/anaconda3/envs/depthcad_zimage/bin/python scripts/infer_real_depth_flow.py \
   --input_dir output/pbrt_real_new_selection/selected/depth_m \
   --checkpoint output/depth_flow_restoration_noisy_ns_n1000_endpoint/best.pt \
   --output_dir output/pbrt_real_new_selection/depth_only_flow_selected \

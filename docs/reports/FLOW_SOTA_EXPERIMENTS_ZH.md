@@ -36,13 +36,13 @@
 自动使用所有可见 GPU：
 
 ```bash
-bash run_flow_sota_experiments.sh
+bash scripts/runs/run_flow_sota_experiments.sh
 ```
 
 指定 GPU：
 
 ```bash
-GPUS=0,1,2,3 bash run_flow_sota_experiments.sh
+GPUS=0,1,2,3 bash scripts/runs/run_flow_sota_experiments.sh
 ```
 
 指定固定输出目录，重复运行时自动从各实验的 `last.pt` 续训：
@@ -50,7 +50,7 @@ GPUS=0,1,2,3 bash run_flow_sota_experiments.sh
 ```bash
 RUN_ROOT=output/flow_sota_experiments/main_v1 \
 GPUS=0,1,2,3 \
-bash run_flow_sota_experiments.sh
+bash scripts/runs/run_flow_sota_experiments.sh
 ```
 
 如果续训后所选 Flow checkpoint 发生变化，启动器会自动使旧 anchor 缓存失效并重建。
@@ -58,13 +58,13 @@ bash run_flow_sota_experiments.sh
 短流程检查：
 
 ```bash
-MODE=smoke GPUS=0 bash run_flow_sota_experiments.sh
+MODE=smoke GPUS=0 bash scripts/runs/run_flow_sota_experiments.sh
 ```
 
 没有 GPU 时只做 CPU 流程检查：
 
 ```bash
-MODE=smoke GPUS=cpu bash run_flow_sota_experiments.sh
+MODE=smoke GPUS=cpu bash scripts/runs/run_flow_sota_experiments.sh
 ```
 
 ## 输出

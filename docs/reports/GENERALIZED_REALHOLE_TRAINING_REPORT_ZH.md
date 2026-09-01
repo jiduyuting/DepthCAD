@@ -15,7 +15,7 @@
 修改：
 
 ```text
-train_synthetic_realhole_flow_pretrain.py
+scripts/train_synthetic_realhole_flow_pretrain.py
 ```
 
 新增参数：
@@ -29,7 +29,7 @@ train_synthetic_realhole_flow_pretrain.py
 新增脚本：
 
 ```text
-run_synthetic_realhole_generalized_pretrain.sh
+scripts/runs/run_synthetic_realhole_generalized_pretrain.sh
 ```
 
 默认配置：
@@ -100,7 +100,7 @@ anchor_mask_mae = 0.045258 m
 corrupted depth + mask/confidence + amplitude features
 ```
 
-所以它不是旧 `benchmark_far_pic_depth_completion.py` 里那个 depth-only checkpoint 的直接替换。要在 far_pic 上公平测它，需要使用 far_pic 对齐的 raw9/amplitude，或补一个 far_pic noisy_amp benchmark adapter。
+所以它不是旧 `scripts/benchmark_far_pic_depth_completion.py` 里那个 depth-only checkpoint 的直接替换。要在 far_pic 上公平测它，需要使用 far_pic 对齐的 raw9/amplitude，或补一个 far_pic noisy_amp benchmark adapter。
 
 ## 推荐下一步
 
@@ -108,7 +108,7 @@ corrupted depth + mask/confidence + amplitude features
 
 ```bash
 EPOCHS=20 OUTPUT_DIR=output/synthetic_realhole_flow_pretrain_generalized_split_e20 \
-  bash run_synthetic_realhole_generalized_pretrain.sh
+  bash scripts/runs/run_synthetic_realhole_generalized_pretrain.sh
 ```
 
 2. 用 e20 checkpoint 作为新的 ToF-aware pretrain，再微调真实 raw9：

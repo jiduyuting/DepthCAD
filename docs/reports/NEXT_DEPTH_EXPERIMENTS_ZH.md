@@ -15,26 +15,26 @@
 默认使用三张 GPU：B checkpoint 评估在 GPU 0，A 在 GPU 1，C 在 GPU 2。
 
 ```bash
-bash run_next_depth_experiments_parallel.sh
+bash scripts/runs/run_next_depth_experiments_parallel.sh
 ```
 
 指定 GPU：
 
 ```bash
-GPU_B=0 GPU_A=2 GPU_C=3 bash run_next_depth_experiments_parallel.sh
+GPU_B=0 GPU_A=2 GPU_C=3 bash scripts/runs/run_next_depth_experiments_parallel.sh
 ```
 
 只有两张 GPU 时，先并行运行 B/A，再单独运行 C：
 
 ```bash
-GPU_B=0 GPU_A=1 RUN_C=0 bash run_next_depth_experiments_parallel.sh
-GPU_C=0 RUN_B_EVAL=0 RUN_A=0 bash run_next_depth_experiments_parallel.sh
+GPU_B=0 GPU_A=1 RUN_C=0 bash scripts/runs/run_next_depth_experiments_parallel.sh
+GPU_C=0 RUN_B_EVAL=0 RUN_A=0 bash scripts/runs/run_next_depth_experiments_parallel.sh
 ```
 
 快速短跑用于检查完整流程：
 
 ```bash
-EPOCHS_A=110 EPOCHS_C=2 bash run_next_depth_experiments_parallel.sh
+EPOCHS_A=110 EPOCHS_C=2 bash scripts/runs/run_next_depth_experiments_parallel.sh
 ```
 
 A 从 epoch 108 继续训练，因此 `EPOCHS_A=110` 表示只训练两个 epoch。正式实验默认 A/C 的目标 epoch 都是 120。

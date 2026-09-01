@@ -57,7 +57,7 @@ python scripts/make_pbrt100_completion_split.py
 现在推荐直接使用总 runner：
 
 ```bash
-bash run_pbrt100_all.sh
+bash scripts/runs/run_pbrt100_all.sh
 ```
 
 它按下面顺序执行：
@@ -74,19 +74,19 @@ bash run_pbrt100_all.sh
 ```bash
 # 只跑 RGBD/LFRD2 训练和评估
 RUN_FLOW=0 RUN_COMPLETIONFORMER=0 RUN_DMD3C=0 RUN_OMNI=0 \
-RUN_LDCM=0 RUN_LINGBOT=0 RUN_DEPTHOR=0 bash run_pbrt100_all.sh
+RUN_LDCM=0 RUN_LINGBOT=0 RUN_DEPTHOR=0 bash scripts/runs/run_pbrt100_all.sh
 
 # 重新训练 Ours-Flow、CompletionFormer、DEPTHOR（默认就是 1）
 TRAIN_FLOW=1 TRAIN_COMPLETIONFORMER=1 TRAIN_DEPTHOR=1 \
-bash run_pbrt100_all.sh
+bash scripts/runs/run_pbrt100_all.sh
 
 # 指定已有 Ours-Flow / DEPTHOR 权重
 FLOW_CKPT=/path/to/flow/best.pt \
-DEPTHOR_CHECKPOINT=/path/to/depthor.pt bash run_pbrt100_all.sh
+DEPTHOR_CHECKPOINT=/path/to/depthor.pt bash scripts/runs/run_pbrt100_all.sh
 
 # 只做已有 checkpoint 推理，不重新训练任何模型
 TRAIN_FLOW=0 TRAIN_COMPLETIONFORMER=0 TRAIN_DEPTHOR=0 \
-RUN_UNIFIED_TRAIN=0 bash run_pbrt100_all.sh
+RUN_UNIFIED_TRAIN=0 bash scripts/runs/run_pbrt100_all.sh
 ```
 
 训练相关的默认环境是：RGBD 使用 `depthcad`，LFRD2/Ours-Flow 使用 `SVDC`，CompletionFormer 使用 `cformer`，DEPTHOR 使用 `py310`；总 runner 会自动检测 CUDA，不可用时使用 CPU。完整训练建议在有 NVIDIA 驱动的机器上运行。
@@ -95,7 +95,7 @@ RUN_UNIFIED_TRAIN=0 bash run_pbrt100_all.sh
 
 ```bash
 FLOW_GPU=1 COMPLETIONFORMER_GPU=2 DEPTHOR_GPU=3 \
-bash run_parallel_train.sh
+bash scripts/runs/run_parallel_train.sh
 ```
 
 三个训练日志分别写入：
@@ -119,15 +119,15 @@ output/parallel_train_logs/depthor.log
 一键训练两个模型，并在训练结束后评估：
 
 ```bash
-bash run_train_rgbd_lfrd2.sh
+bash scripts/runs/run_train_rgbd_lfrd2.sh
 ```
 
 runner 默认使用 `output/full_pbrt_manifest_seed123.json`、200 epochs，并在发现 `output/*/last.pth` 时自动续训。常用覆盖方式：
 
 ```bash
-MODELS=rgbd EPOCHS=200 DEVICE=cuda:0 bash run_train_rgbd_lfrd2.sh
-MODELS=lfrd2 RESUME=0 RUN_EVAL=0 bash run_train_rgbd_lfrd2.sh
-MANIFEST=output/full_pbrt_manifest_seed123_iq.json bash run_train_rgbd_lfrd2.sh
+MODELS=rgbd EPOCHS=200 DEVICE=cuda:0 bash scripts/runs/run_train_rgbd_lfrd2.sh
+MODELS=lfrd2 RESUME=0 RUN_EVAL=0 bash scripts/runs/run_train_rgbd_lfrd2.sh
+MANIFEST=output/full_pbrt_manifest_seed123_iq.json bash scripts/runs/run_train_rgbd_lfrd2.sh
 ```
 
 注意：`full_pbrt_manifest_seed123.json` 对应当前统一训练的 `train/val/test = 8910/990/100` 划分；`PBRT100` 主表只把最后的 100 张 `test` 结果用于比较。
@@ -144,14 +144,14 @@ LDCM：
 
 ```bash
 OUTPUT_DIR=/data/pre_student/GJ/DepthCAD/output/pbrt100_depth_completion/ldcm_zero_shot \
-bash run_ldcm_full_pbrt.sh
+bash scripts/runs/run_ldcm_full_pbrt.sh
 ```
 
 LingBot-Depth：
 
 ```bash
 OUTPUT_DIR=/data/pre_student/GJ/DepthCAD/output/pbrt100_depth_completion/lingbot_dc_zero_shot \
-bash run_lingbot_full_pbrt.sh
+bash scripts/runs/run_lingbot_full_pbrt.sh
 ```
 
 OMNI-DC：
@@ -160,7 +160,7 @@ OMNI-DC：
 UNIFORMAT_DIR=/data/pre_student/GJ/DepthCAD/output/pbrt100_depth_completion/uniformat \
 SUMMARY_OUTPUT=/data/pre_student/GJ/DepthCAD/output/pbrt100_depth_completion/omnidc_zero_shot/summary.json \
 LOG_DIR=/data/pre_student/GJ/DepthCAD/output/pbrt100_depth_completion/omnidc_runs \
-bash run_omnidc_full_pbrt.sh
+bash scripts/runs/run_omnidc_full_pbrt.sh
 ```
 
 DMD3C：
@@ -169,7 +169,7 @@ DMD3C：
 UNIFORMAT_DIR=/data/pre_student/GJ/DepthCAD/output/pbrt100_depth_completion/uniformat \
 RUN_NAME=DMD3C_PBRT100 \
 SUMMARY_OUTPUT=/data/pre_student/GJ/DepthCAD/output/pbrt100_depth_completion/dmd3c/summary.json \
-bash run_dmd3c_full_pbrt.sh
+bash scripts/runs/run_dmd3c_full_pbrt.sh
 ```
 
 DEPTHOR：
@@ -178,13 +178,13 @@ DEPTHOR：
 CHECKPOINT=/path/to/depthor_weights.pt \
 DAV2_CHECKPOINT=/path/to/depth_anything_v2_vits.pth \
 OUTPUT_DIR=/data/pre_student/GJ/DepthCAD/output/pbrt100_depth_completion/depthor \
-bash run_depthor_full_pbrt.sh
+bash scripts/runs/run_depthor_full_pbrt.sh
 ```
 
 CompletionFormer：
 
 ```bash
-/home/lab507/anaconda3/envs/cformer/bin/python eval_completionformer_full_pbrt.py \
+/home/lab507/anaconda3/envs/cformer/bin/python scripts/eval_completionformer_full_pbrt.py \
   --completionformer_root /data/pre_student/hcy/CompletionFormer \
   --checkpoint /path/to/completionformer_checkpoint.pt \
   --cache_root "$CACHE_ROOT" \

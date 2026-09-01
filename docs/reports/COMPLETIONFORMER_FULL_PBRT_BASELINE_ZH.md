@@ -35,7 +35,7 @@ cp integrations/completionformer/pbrtfull.py \
 本机已验证可用的环境是 `/home/lab507/anaconda3/envs/cformer/bin/python`，对应 Python 3.8、Torch 1.10.1 和 CUDA 11.3。脚本会自动加入已有的 `DCN.cpython-38-*.so` 路径，并使用 `integrations/completionformer/compat` 提供模型实际需要的最小 MMCV/MMSeg checkpoint 接口。不要直接用默认 Python 3.9，否则会报 `ModuleNotFoundError: DCN`。
 
 ```bash
-GPU=0 BATCH_SIZE=4 bash run_completionformer_full_pbrt.sh
+GPU=0 BATCH_SIZE=4 bash scripts/runs/run_completionformer_full_pbrt.sh
 ```
 
 显存不足时将 `BATCH_SIZE` 改为 2。若环境位置发生变化，可通过 `PYTHON_BIN=/path/to/python` 覆盖。脚本会先生成并校验 `output/completionformer_full_pbrt/split.json`，再启动训练。训练日志和每轮网络权重写入 `output/completionformer_full_pbrt/train_logs/`；默认不额外保存 optimizer/scheduler，以控制磁盘占用。
@@ -46,7 +46,7 @@ GPU=0 BATCH_SIZE=4 bash run_completionformer_full_pbrt.sh
 
 ```bash
 PYTHONPATH=integrations/completionformer/compat:/data/pre_student/hcy/CompletionFormer/src/model/deformconv/build/lib.linux-x86_64-3.8 \
-/home/lab507/anaconda3/envs/cformer/bin/python eval_completionformer_full_pbrt.py \
+/home/lab507/anaconda3/envs/cformer/bin/python scripts/eval_completionformer_full_pbrt.py \
   --completionformer_root /data/pre_student/hcy/CompletionFormer \
   --checkpoint /path/to/model_00072.pt \
   --device cuda:0 \

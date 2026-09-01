@@ -22,19 +22,19 @@ The goal is to let the model learn where it should strongly correct the NS ancho
 
 ## Code Changes
 
-- `train_depth_completion.py`
+- `scripts/train_depth_completion.py`
   - `ResidualUNet` now supports `out_channels`.
-- `train_depth_restoration.py`
+- `scripts/train_depth_restoration.py`
   - Adds `--prediction_mode residual|gated_residual`.
   - Adds gated residual prediction support.
   - Keeps default `prediction_mode=residual` for backward compatibility.
-- `eval_depth_restoration.py`
+- `scripts/eval_depth_restoration.py`
   - Loads old residual checkpoints and new gated residual checkpoints automatically from checkpoint args.
 
 ## Recommended V2 Training Command
 
 ```bash
-python -u train_depth_restoration.py \
+python -u scripts/train_depth_restoration.py \
   --cache_dir depth_completion_cache/depth_cache_0515_n1000_plane_r12 \
   --train_list output/splits_n1000_plane_r12_exclude_seed123/train.txt \
   --val_list output/splits_n1000_plane_r12_exclude_seed123/val.txt \
@@ -62,7 +62,7 @@ python -u train_depth_restoration.py \
 Use this only after the plain gated version is evaluated. It weakly encourages larger corrections in holes and smaller corrections outside holes:
 
 ```bash
-python -u train_depth_restoration.py \
+python -u scripts/train_depth_restoration.py \
   --cache_dir depth_completion_cache/depth_cache_0515_n1000_plane_r12 \
   --train_list output/splits_n1000_plane_r12_exclude_seed123/train.txt \
   --val_list output/splits_n1000_plane_r12_exclude_seed123/val.txt \
@@ -91,7 +91,7 @@ python -u train_depth_restoration.py \
 ## Evaluation Command
 
 ```bash
-python -u eval_depth_restoration.py \
+python -u scripts/eval_depth_restoration.py \
   --checkpoint output/depth_restoration_unet_noisy_ns_n1000_gated/best.pt \
   --cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123 \
   --split all \
@@ -105,7 +105,7 @@ python -u eval_depth_restoration.py \
 Ranked visualization:
 
 ```bash
-python -u eval_depth_restoration.py \
+python -u scripts/eval_depth_restoration.py \
   --checkpoint output/depth_restoration_unet_noisy_ns_n1000_gated/best.pt \
   --cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123 \
   --split all \

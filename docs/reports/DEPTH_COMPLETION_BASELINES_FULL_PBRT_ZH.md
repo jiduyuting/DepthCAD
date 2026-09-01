@@ -43,7 +43,7 @@ PBRT 没有真实 RGB。这里的三频 ToF 幅度只是在保持所有方法输
 
 - 数据和指标：`depth_completion_baselines/common.py`
 - Uniformat 导出：`scripts/export_pbrt_depth_completion_uniformat.py`
-- 外部预测评分：`summarize_depth_completion_predictions.py`
+- 外部预测评分：`scripts/summarize_depth_completion_predictions.py`
 
 OMNI-DC 和 DMD³C 官方保存的 16-bit PNG 使用 `depth * 256`，评分时必须设置 `--prediction_scale 0.00390625`。编号文件通过导出目录中的 `index.json` 恢复到 PBRT `sample_id`。
 
@@ -57,10 +57,10 @@ OMNI-DC 和 DMD³C 官方保存的 16-bit PNG 使用 `depth * 256`，评分时�
 - 启动：
 
 ```bash
-GPU=0 BATCH_SIZE=4 bash run_completionformer_full_pbrt.sh
+GPU=0 BATCH_SIZE=4 bash scripts/runs/run_completionformer_full_pbrt.sh
 ```
 
-训练完成后按 `COMPLETIONFORMER_FULL_PBRT_BASELINE_ZH.md` 使用 `eval_completionformer_full_pbrt.py` 统一评测。
+训练完成后按 `COMPLETIONFORMER_FULL_PBRT_BASELINE_ZH.md` 使用 `scripts/eval_completionformer_full_pbrt.py` 统一评测。
 
 ### OMNI-DC v1.1
 
@@ -73,7 +73,7 @@ GPU=0 BATCH_SIZE=4 bash run_completionformer_full_pbrt.sh
 ```bash
 CHECKPOINT=/path/to/modelv1.1_best_72epochs.pt \
 DAV2_CHECKPOINT=/path/to/depth_anything_v2_vitl.pth \
-bash run_omnidc_full_pbrt.sh
+bash scripts/runs/run_omnidc_full_pbrt.sh
 ```
 
 脚本自动导出 Uniformat、调用官方 `main.py`、定位编号 PNG，并生成统一 `summary.json`。
@@ -87,7 +87,7 @@ bash run_omnidc_full_pbrt.sh
 - 启动：
 
 ```bash
-bash run_ldcm_full_pbrt.sh
+bash scripts/runs/run_ldcm_full_pbrt.sh
 ```
 
 可用 `MODEL=/local/LDCM MOGE_MODEL=/local/moge` 改为完全离线加载。
@@ -101,7 +101,7 @@ bash run_ldcm_full_pbrt.sh
 - 启动：
 
 ```bash
-bash run_lingbot_full_pbrt.sh
+bash scripts/runs/run_lingbot_full_pbrt.sh
 ```
 
 可用 `MODEL=/local/lingbot-depth` 指定本地模型目录。
@@ -118,7 +118,7 @@ bash run_lingbot_full_pbrt.sh
 
 ```bash
 bash scripts/download_dmd3c_weights.sh
-LIMIT=1 GPU=2 bash run_dmd3c_full_pbrt.sh
+LIMIT=1 GPU=2 bash scripts/runs/run_dmd3c_full_pbrt.sh
 ```
 
 脚本使用仓库现有 `datasets/uni.py`，不修改官方模型。训练若采用官方蒸馏入口，应单独记录教师模型、初始化权重、训练轮数和 GPU 数量。
@@ -127,14 +127,14 @@ LIMIT=1 GPU=2 bash run_dmd3c_full_pbrt.sh
 
 - 分组：PBRT 监督重训；官方 ZJU 权重可作为附加迁移实验
 - 当前阻塞：缺少 DEPTHOR checkpoint、DAV2-small checkpoint 和编译后的 `BpOps`
-- 适配：`eval_depthor_full_pbrt.py` 在运行时注入 DAV2 checkpoint 路径，绕过外部仓库中的作者机器硬编码，不改其源码
+- 适配：`scripts/eval_depthor_full_pbrt.py` 在运行时注入 DAV2 checkpoint 路径，绕过外部仓库中的作者机器硬编码，不改其源码
 - 模型内部尺寸：按官方结构将 256×256 输入插值到 480×640，输出再插值回 256×256 统一评分
 - 启动：
 
 ```bash
 CHECKPOINT=/path/to/depthor_weights.pt \
 DAV2_CHECKPOINT=/path/to/depth_anything_v2_vits.pth \
-bash run_depthor_full_pbrt.sh
+bash scripts/runs/run_depthor_full_pbrt.sh
 ```
 
 ## 5. 环境复用建议
@@ -162,7 +162,7 @@ bash run_depthor_full_pbrt.sh
 所有 runner 都支持 `LIMIT=2`，应先用以下形式做冒烟测试：
 
 ```bash
-LIMIT=2 bash run_lingbot_full_pbrt.sh
+LIMIT=2 bash scripts/runs/run_lingbot_full_pbrt.sh
 ```
 
 ## 7. 结果表模板

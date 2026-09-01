@@ -22,7 +22,7 @@ noisy depth + NS anchor + hole mask + confidence
 下一组直接加 noisy amplitude：
 
 ```bash
-python -u train_depth_flow_restoration.py \
+python -u scripts/train_depth_flow_restoration.py \
   --cache_dir depth_completion_cache/depth_cache_0515_n1000_plane_r12 \
   --train_list output/splits_n1000_plane_r12_exclude_seed123/train.txt \
   --val_list output/splits_n1000_plane_r12_exclude_seed123/val.txt \
@@ -54,7 +54,7 @@ python -u train_depth_flow_restoration.py \
 Evaluation:
 
 ```bash
-python -u eval_depth_flow_restoration.py \
+python -u scripts/eval_depth_flow_restoration.py \
   --checkpoint output/depth_flow_restoration_noisy_amp_ns_n1000_endpoint_w2/best.pt \
   --cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123 \
   --split all \
@@ -93,7 +93,7 @@ python scripts/analysis/organize_ranked_visualizations.py \
 ### Generate IQ Training Cache
 
 ```bash
-python -u apply_kinect_holes_and_eval.py \
+python -u scripts/apply_kinect_holes_and_eval.py \
   --num_samples 1000 \
   --depth_fill_method plane \
   --depth_fill_radius 15 \
@@ -109,7 +109,7 @@ python -u apply_kinect_holes_and_eval.py \
 ### Generate IQ Holdout Cache
 
 ```bash
-python -u apply_kinect_holes_and_eval.py \
+python -u scripts/apply_kinect_holes_and_eval.py \
   --num_samples 100 \
   --depth_fill_method plane \
   --depth_fill_radius 15 \
@@ -125,7 +125,7 @@ python -u apply_kinect_holes_and_eval.py \
 ### Create IQ Split
 
 ```bash
-python make_depth_completion_splits.py \
+python scripts/make_depth_completion_splits.py \
   --cache_dir depth_completion_cache/depth_cache_0515_n1000_plane_r12_iq \
   --holdout_cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123_iq \
   --output_dir output/splits_n1000_plane_r12_iq_exclude_seed123 \
@@ -136,7 +136,7 @@ python make_depth_completion_splits.py \
 ### Train IQ + Amplitude Flow Endpoint
 
 ```bash
-python -u train_depth_flow_restoration.py \
+python -u scripts/train_depth_flow_restoration.py \
   --cache_dir depth_completion_cache/depth_cache_0515_n1000_plane_r12_iq \
   --train_list output/splits_n1000_plane_r12_iq_exclude_seed123/train.txt \
   --val_list output/splits_n1000_plane_r12_iq_exclude_seed123/val.txt \
@@ -168,7 +168,7 @@ python -u train_depth_flow_restoration.py \
 Evaluation:
 
 ```bash
-python -u eval_depth_flow_restoration.py \
+python -u scripts/eval_depth_flow_restoration.py \
   --checkpoint output/depth_flow_restoration_noisy_iq_amp_ns_n1000_endpoint_w2/best.pt \
   --cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123_iq \
   --split all \

@@ -62,19 +62,19 @@ zero_ratio_in_repair_mask_mean   # 是否还有没补上的无效点
 建议运行顺序：
 
 ```bash
-python3 run_external_inpainting_far_pic.py run-propainter \
+python3 scripts/run_external_inpainting_far_pic.py run-propainter \
   --case output/far_pic_benchmark/synthetic_05 \
   --output_dir output/far_pic_benchmark/synthetic_05/propainter_run \
   --decode \
   --decode_name propainter_restored
 
-python3 run_external_inpainting_far_pic.py standardize-method \
+python3 scripts/run_external_inpainting_far_pic.py standardize-method \
   --case output/far_pic_benchmark/synthetic_05 \
   --method propainter \
   --source_dir output/far_pic_benchmark/synthetic_05/propainter_run/restored_by_stem \
   --source_suffix propainter_restored
 
-python3 visualize_far_pic_benchmark_compare.py \
+python3 scripts/visualize_far_pic_benchmark_compare.py \
   --case_dir output/far_pic_benchmark/synthetic_05 \
   --output_dir output/far_pic_benchmark/synthetic_05/visualizations_compare
 ```

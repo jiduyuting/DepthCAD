@@ -108,7 +108,7 @@ This means the main model improves `99/100` holdout samples in the hole region, 
 The restoration evaluator supports ranked visualization:
 
 ```bash
-python -u eval_depth_restoration.py \
+python -u scripts/eval_depth_restoration.py \
   --checkpoint output/depth_restoration_unet_noisy_ns_n1000/best.pt \
   --cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123 \
   --split all \

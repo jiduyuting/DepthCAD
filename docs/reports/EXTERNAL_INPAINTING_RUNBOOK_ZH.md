@@ -181,7 +181,7 @@ ModuleNotFoundError: No module named 'opencv_transforms'
 新增脚本：
 
 ```text
-run_external_inpainting_far_pic.py
+scripts/run_external_inpainting_far_pic.py
 ```
 
 作用：
@@ -197,7 +197,7 @@ run_external_inpainting_far_pic.py
 脚本已通过：
 
 ```bash
-python3 -m py_compile run_external_inpainting_far_pic.py
+python3 -m py_compile scripts/run_external_inpainting_far_pic.py
 ```
 
 并已用旧 ProPainter PNG 结果测试了解码，输出 stack 形状为：
@@ -211,7 +211,7 @@ python3 -m py_compile run_external_inpainting_far_pic.py
 以 `bad_depth_mask_v1` 为例，先打印命令：
 
 ```bash
-python3 run_external_inpainting_far_pic.py propainter-command \
+python3 scripts/run_external_inpainting_far_pic.py propainter-command \
   --case output/far_pic_benchmark/bad_depth_mask_v1
 ```
 
@@ -232,7 +232,7 @@ MPLCONFIGDIR=/tmp/mpl_propainter /home/lab507/anaconda3/envs/freeinpaint/bin/pyt
 如果是在有 GPU 的 shell 中，建议直接用脚本跑并在结束后自动解码：
 
 ```bash
-python3 run_external_inpainting_far_pic.py run-propainter \
+python3 scripts/run_external_inpainting_far_pic.py run-propainter \
   --case output/far_pic_benchmark/bad_depth_mask_v1 \
   --decode
 ```
@@ -240,7 +240,7 @@ python3 run_external_inpainting_far_pic.py run-propainter \
 如果 ProPainter 已经生成 PNG 帧，单独解码：
 
 ```bash
-python3 run_external_inpainting_far_pic.py decode-propainter \
+python3 scripts/run_external_inpainting_far_pic.py decode-propainter \
   --case output/far_pic_benchmark/bad_depth_mask_v1 \
   --output_dir output/far_pic_benchmark/bad_depth_mask_v1/propainter_run
 ```
@@ -316,14 +316,14 @@ mask 像素值:    0/255
 重新准备命令：
 
 ```bash
-python3 run_external_inpainting_far_pic.py prepare-rad \
+python3 scripts/run_external_inpainting_far_pic.py prepare-rad \
   --case output/far_pic_benchmark/bad_depth_mask_v1
 ```
 
 打印 RAD 命令：
 
 ```bash
-python3 run_external_inpainting_far_pic.py rad-command \
+python3 scripts/run_external_inpainting_far_pic.py rad-command \
   --case output/far_pic_benchmark/bad_depth_mask_v1 \
   --val_data_path output/far_pic_benchmark/bad_depth_mask_v1/rad_val \
   --resume_from_checkpoint checkpoint-300000

@@ -47,7 +47,7 @@ output/depth_flow_restoration_noisy_amp_ns_n1000_endpoint_w2_trans_b32_l2_p2/eva
 Export PBRT holdout to ProPainter format:
 
 ```bash
-python export_pbrt_propainter_case.py \
+python scripts/export_pbrt_propainter_case.py \
   --cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123 \
   --output_dir output/pbrt_propainter_seed123
 ```
@@ -55,7 +55,7 @@ python export_pbrt_propainter_case.py \
 Run ProPainter and decode metric depth:
 
 ```bash
-python run_external_inpainting_far_pic.py run-propainter \
+python scripts/run_external_inpainting_far_pic.py run-propainter \
   --case output/pbrt_propainter_seed123 \
   --output_dir output/pbrt_propainter_seed123/propainter_run \
   --height 256 \
@@ -76,7 +76,7 @@ output/pbrt_propainter_seed123/propainter_run/restored_by_stem
 Evaluate and compare:
 
 ```bash
-python eval_pbrt_external_inpainting.py \
+python scripts/eval_pbrt_external_inpainting.py \
   --case_dir output/pbrt_propainter_seed123 \
   --output_dir output/pbrt_propainter_seed123/evaluation \
   --existing_eval final_flow:output/depth_flow_restoration_noisy_amp_ns_n1000_endpoint_w2_trans_b32_l2_p2/eval_seed123_endpoint \

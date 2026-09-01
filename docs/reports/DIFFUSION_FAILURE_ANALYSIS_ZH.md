@@ -21,8 +21,8 @@ Date: 2026-05-21
 对应代码：
 
 ```text
-inference_sd_inpaint.py
-apply_kinect_holes_and_eval.py
+scripts/inference_sd_inpaint.py
+scripts/apply_kinect_holes_and_eval.py
 ```
 
 这个流程的关键问题是：它把 ToF/IQ 的物理测量问题，强行改造成了 6 次独立的自然图像 inpainting。
@@ -32,7 +32,7 @@ apply_kinect_holes_and_eval.py
 基于已有 n1000 plane_r12 结果重新统计：
 
 ```text
-diagnose_diffusion_failures.py
+scripts/diagnose_diffusion_failures.py
 --eval_dir kinect_evaluation/depth_cache_0515_n1000_plane_r12
 ```
 
@@ -267,7 +267,7 @@ single-channel pseudo-RGB SD inpainting
 
 ### 实验 A：扩展诊断，保存 SD 中间结果
 
-已在 `apply_kinect_holes_and_eval.py` 中加入：
+已在 `scripts/apply_kinect_holes_and_eval.py` 中加入：
 
 ```bash
 --save_sd_diagnostics
@@ -277,7 +277,7 @@ single-channel pseudo-RGB SD inpainting
 建议只跑 10 到 20 张，不要全跑：
 
 ```bash
-python -u apply_kinect_holes_and_eval.py \
+python -u scripts/apply_kinect_holes_and_eval.py \
   --num_samples 20 \
   --depth_fill_method plane \
   --depth_fill_radius 15 \

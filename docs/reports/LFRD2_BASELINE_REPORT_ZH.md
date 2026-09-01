@@ -30,7 +30,7 @@ DepthCAD raw9/depth
 新增脚本：
 
 ```text
-run_lfrd2_raw9_masked_self_test.py
+scripts/run_lfrd2_raw9_masked_self_test.py
 ```
 
 关键实现：
@@ -43,7 +43,7 @@ run_lfrd2_raw9_masked_self_test.py
 推荐复现实验命令：
 
 ```bash
-/home/lab507/anaconda3/envs/SVDC/bin/python run_lfrd2_raw9_masked_self_test.py \
+/home/lab507/anaconda3/envs/SVDC/bin/python scripts/run_lfrd2_raw9_masked_self_test.py \
   --raw_dir raw \
   --depth_dir depth \
   --output_dir output/lfrd2_raw9_masked_self_test_anchor_fliplr_vis \
@@ -136,4 +136,4 @@ LFRD2 is highly relevant as a learned fractional reaction-diffusion framework fo
 
 1. 将 DepthCAD raw9 重新整理成 LFRD2 的训练格式，或改 LFRD2 输入层支持 `9 x 240 x 320`。
 2. 用当前真实 raw9/depth masked self-supervision fine-tune LFRD2。
-3. 再用同一个 `real_raw9_masked_self_test.py` 口径报告结果。
+3. 再用同一个 `scripts/real_raw9_masked_self_test.py` 口径报告结果。

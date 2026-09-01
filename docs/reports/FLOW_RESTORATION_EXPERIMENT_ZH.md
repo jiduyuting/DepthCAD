@@ -14,18 +14,18 @@ sampling: 从 anchor 出发，沿 velocity 多步积分到 restored dense depth
 ## 新增文件
 
 ```text
-train_depth_flow_restoration.py
-eval_depth_flow_restoration.py
+scripts/train_depth_flow_restoration.py
+scripts/eval_depth_flow_restoration.py
 ```
 
-训练脚本复用 `train_depth_restoration.py` 里的 cache dataset，所以 cache 不需要重新生成。
+训练脚本复用 `scripts/train_depth_restoration.py` 里的 cache dataset，所以 cache 不需要重新生成。
 
 ## 推荐第一组实验
 
 先跑最稳的纯 rectified flow，不加随机 bridge noise：
 
 ```bash
-python -u train_depth_flow_restoration.py \
+python -u scripts/train_depth_flow_restoration.py \
   --cache_dir depth_completion_cache/depth_cache_0515_n1000_plane_r12 \
   --train_list output/splits_n1000_plane_r12_exclude_seed123/train.txt \
   --val_list output/splits_n1000_plane_r12_exclude_seed123/val.txt \
@@ -57,7 +57,7 @@ python -u train_depth_flow_restoration.py \
 和之前主结果一样，用 `seed123` holdout：
 
 ```bash
-python -u eval_depth_flow_restoration.py \
+python -u scripts/eval_depth_flow_restoration.py \
   --checkpoint output/depth_flow_restoration_noisy_ns_n1000/best.pt \
   --cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123 \
   --split all \
@@ -92,7 +92,7 @@ flow 版本如果能低于这个，说明生成式 flow 确实带来了收益；
 如果第一组没有明显超过主模型，可以跑 amplitude 条件：
 
 ```bash
-python -u train_depth_flow_restoration.py \
+python -u scripts/train_depth_flow_restoration.py \
   --cache_dir depth_completion_cache/depth_cache_0515_n1000_plane_r12 \
   --train_list output/splits_n1000_plane_r12_exclude_seed123/train.txt \
   --val_list output/splits_n1000_plane_r12_exclude_seed123/val.txt \
@@ -136,7 +136,7 @@ python -u train_depth_flow_restoration.py \
 原因是当前任务从 deterministic anchor 出发，最终只关心 restored endpoint。纯 flow 会把容量分散到整条 `anchor -> GT` 路径上，而 endpoint auxiliary 会强制同一个模型在 `t=0` 时也能直接执行 `anchor -> GT` restoration。
 
 ```bash
-python -u train_depth_flow_restoration.py \
+python -u scripts/train_depth_flow_restoration.py \
   --cache_dir depth_completion_cache/depth_cache_0515_n1000_plane_r12 \
   --train_list output/splits_n1000_plane_r12_exclude_seed123/train.txt \
   --val_list output/splits_n1000_plane_r12_exclude_seed123/val.txt \
@@ -168,7 +168,7 @@ python -u train_depth_flow_restoration.py \
 训练后先评估 endpoint direct output：
 
 ```bash
-python -u eval_depth_flow_restoration.py \
+python -u scripts/eval_depth_flow_restoration.py \
   --checkpoint output/depth_flow_restoration_noisy_ns_n1000_endpoint/best.pt \
   --cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123 \
   --split all \
@@ -185,7 +185,7 @@ python -u eval_depth_flow_restoration.py \
 再评估同一个 checkpoint 的 Euler flow output：
 
 ```bash
-python -u eval_depth_flow_restoration.py \
+python -u scripts/eval_depth_flow_restoration.py \
   --checkpoint output/depth_flow_restoration_noisy_ns_n1000_endpoint/best.pt \
   --cache_dir depth_completion_cache/depth_cache_0514_n100_plane_r12_seed123 \
   --split all \
