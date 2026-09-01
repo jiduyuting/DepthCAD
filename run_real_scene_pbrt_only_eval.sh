@@ -12,7 +12,7 @@ EXPERIMENT_NAME=${EXPERIMENT_NAME:-pbrt_only_eval_${VAL_SCENE}}
 SPLIT_JSON=${SPLIT_JSON:-output/${EXPERIMENT_NAME}/split.json}
 OUTPUT_DIR=${OUTPUT_DIR:-output/${EXPERIMENT_NAME}/real_val_selftest_auto}
 
-"${PYTHON_BIN}" make_real_scene_holdout_split.py \
+"${PYTHON_BIN}" scripts/data_prep/make_real_scene_holdout_split.py \
   --raw_dir "${REAL_ROOT}/noise" \
   --depth_dir "${REAL_ROOT}/depth" \
   --val_scenes "${VAL_SCENE}" \
@@ -27,6 +27,6 @@ OUTPUT_DIR="${OUTPUT_DIR}" \
 bash run_pbrt_real_threshold_amp_depth_selftest.sh
 
 MPLCONFIGDIR=${MPLCONFIGDIR:-/tmp/matplotlib-depthcad} \
-"${PYTHON_BIN}" analyze_real_val_failures.py \
+"${PYTHON_BIN}" scripts/analysis/analyze_real_val_failures.py \
   --selftest_dir "${OUTPUT_DIR}" \
   --top_k 12

@@ -81,7 +81,7 @@ run_completionformer() {
 }
 
 summarize() {
-  python summarize_pbrt100_depth_completion_comparison.py
+  python scripts/analysis/summarize_pbrt100_depth_completion_comparison.py
 }
 
 usage() {

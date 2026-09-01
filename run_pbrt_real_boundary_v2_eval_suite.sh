@@ -24,7 +24,7 @@ OUTPUT_DIR="${REAL_SELFTEST_DIR}" \
 bash run_pbrt_real_threshold_amp_depth_selftest.sh
 
 MPLCONFIGDIR=${MPLCONFIGDIR:-/tmp/matplotlib-depthcad} \
-/home/lab507/anaconda3/envs/SVDC/bin/python analyze_real_val_failures.py \
+/home/lab507/anaconda3/envs/SVDC/bin/python scripts/analysis/analyze_real_val_failures.py \
   --selftest_dir "${REAL_SELFTEST_DIR}" \
   --top_k 12
 

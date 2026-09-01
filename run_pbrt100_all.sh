@@ -260,7 +260,7 @@ else
 fi
 
 run_step "Build PBRT100 comparison" \
-  "${PYTHON_BASE}" summarize_pbrt100_depth_completion_comparison.py \
+  "${PYTHON_BASE}" scripts/analysis/summarize_pbrt100_depth_completion_comparison.py \
     --output_dir "${OUTPUT_ROOT}/comparison" --expected_samples 100 \
     --selected "Ours-Flow-FullPBRT:${OUTPUT_ROOT}/ours_flow/summary.json:unified flow evaluation"
 

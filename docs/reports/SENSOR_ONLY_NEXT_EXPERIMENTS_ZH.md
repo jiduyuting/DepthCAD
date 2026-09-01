@@ -71,7 +71,7 @@ python -u eval_depth_flow_restoration.py \
 整理 ranked cases:
 
 ```bash
-python organize_ranked_visualizations.py \
+python scripts/analysis/organize_ranked_visualizations.py \
   --eval_dir output/depth_flow_restoration_noisy_amp_ns_n1000_endpoint_w2/eval_seed123_endpoint \
   --output_prefix output/depth_flow_restoration_summary_final/ranked_cases_endpoint_noisy_amp_w2 \
   --baseline anchor \

@@ -20,7 +20,7 @@ BOUNDARY_GRAD_LOSS_WEIGHT=${BOUNDARY_GRAD_LOSS_WEIGHT:-0.05}
 BOUNDARY_L1_LOSS_WEIGHT=${BOUNDARY_L1_LOSS_WEIGHT:-0.10}
 BOUNDARY_WIDTH=${BOUNDARY_WIDTH:-3}
 
-"${PYTHON_BIN}" make_real_scene_holdout_split.py \
+"${PYTHON_BIN}" scripts/data_prep/make_real_scene_holdout_split.py \
   --raw_dir "${REAL_ROOT}/noise" \
   --depth_dir "${REAL_ROOT}/depth" \
   --val_scenes "${VAL_SCENE}" \

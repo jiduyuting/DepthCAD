@@ -7,7 +7,7 @@
 3. 保存带空洞的图像和空洞 mask
 
 用法:
-    python prepare_kinect_holes.py \
+    python scripts/data_prep/prepare_kinect_holes.py \
         --noise_iq_dir /path/to/noise_IQ \
         --ideal_iq_dir /path/to/ideal_IQ \
         --output_dir /path/to/noise_IQ_with_holes \

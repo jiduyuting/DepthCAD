@@ -226,7 +226,7 @@ add_candidate "A-conservative-preserve-observed" "${EXPERIMENT_ROOT}/a_conservat
 add_candidate "C-hole-distance" "${EXPERIMENT_ROOT}/c_hole_distance/eval_test_raw/summary.json" "Exp C; checkpoint selected by validation Hole MAE"
 add_candidate "C-hole-distance-preserve-observed" "${EXPERIMENT_ROOT}/c_hole_distance/eval_test_preserve_observed/summary.json" "Exp C validation-hole checkpoint with observed pixels preserved"
 
-"${SUMMARY_PYTHON}" -u summarize_pbrt100_depth_completion_comparison.py "${summary_args[@]}" \
+"${SUMMARY_PYTHON}" -u scripts/analysis/summarize_pbrt100_depth_completion_comparison.py "${summary_args[@]}" \
   >"${LOG_DIR}/comparison.log" 2>&1 || status=1
 printf '%s\n' "${EXPERIMENT_ROOT}" >"${EXPERIMENT_ROOT}/RUN_ROOT.txt"
 echo "[next-round] comparison: ${comparison_dir}/summary.md"

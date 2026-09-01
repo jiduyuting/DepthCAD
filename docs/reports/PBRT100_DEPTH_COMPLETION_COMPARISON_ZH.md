@@ -206,7 +206,7 @@ python scripts/eval_unified_baselines.py \
 ## 汇总
 
 ```bash
-python summarize_pbrt100_depth_completion_comparison.py \
+python scripts/analysis/summarize_pbrt100_depth_completion_comparison.py \
   --selected "MyModel:output/my_model/eval_pbrt100/summary.json"
 ```
 

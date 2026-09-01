@@ -7,7 +7,7 @@
 - confidence_masked: 置信度图 (hole=0, valid=1)
 
 用法:
-    python create_masked_pbrt_dataset.py
+    python scripts/data_prep/create_masked_pbrt_dataset.py
 
 注意: 需要先确保 pbrt_dataset/data 下有 ideal_IQ, noise_IQ, confidence 目录
 """
