@@ -1,0 +1,5 @@
+# Minimal non-CUDA dependencies for scripts/flow/.
+# Install torch/torchvision separately with a wheel matching the target GPU.
+numpy>=1.20
+opencv-python>=4.6
+matplotlib>=3.6

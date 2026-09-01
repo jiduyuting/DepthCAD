@@ -43,6 +43,26 @@ Flow 真实场景可视化和缓存预处理还会用到绘图库；如果当前
 python -m pip install matplotlib tqdm
 ```
 
+如果只运行 `scripts/flow/`，可以使用更小的依赖文件：
+
+```bash
+python -m pip install -r requirements-flow.txt
+```
+
+`requirements-flow.txt` 不锁定 PyTorch，因为 PyTorch 必须匹配目标机器的 CUDA。
+例如当前 `control` 环境使用的是 PyTorch 2.4.0 + cu121、torchvision 0.19.0；可先
+安装对应 CUDA wheel，再安装上面的文件：
+
+```bash
+python -m pip install \
+  torch==2.4.0 torchvision==0.19.0 \
+  --index-url https://download.pytorch.org/whl/cu121
+python -m pip install -r requirements-flow.txt
+```
+
+如果 H200-4 已经准备好了 `control` 或 `SVDC` 环境，只需在对应环境中执行
+`python -m pip install -r requirements-flow.txt`，不要重复安装另一套 PyTorch。
+
 确认导入和 CUDA 状态：
 
 ```bash
