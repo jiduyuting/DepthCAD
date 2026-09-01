@@ -39,7 +39,7 @@ elif [[ "${EVAL_SPLIT}" != "all" ]]; then
   exit 1
 fi
 
-"${PYTHON_BIN}" scripts/real_raw9_masked_self_test.py \
+"${PYTHON_BIN}" scripts/flow/real_raw9_masked_self_test.py \
   --raw_dir "${RAW_DIR}" \
   --depth_dir "${DEPTH_DIR}" \
   --checkpoint "${CHECKPOINT}" \

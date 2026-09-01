@@ -25,7 +25,7 @@ echo "Using REAL_ROOT=${REAL_ROOT}"
 echo "Using RAW_DIR=${RAW_DIR}"
 echo "Using DEPTH_DIR=${DEPTH_DIR}"
 
-"${PYTHON_BIN}" scripts/train_real_raw9_flow_finetune.py \
+"${PYTHON_BIN}" scripts/flow/train_real_raw9_flow_finetune.py \
   --raw_dir "${RAW_DIR}" \
   --depth_dir "${DEPTH_DIR}" \
   --pretrained_checkpoint "${PRETRAIN_CKPT}" \

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 BASE_OUTPUT="${BASE_OUTPUT:-${ROOT_DIR}/output/depth_flow_full_pbrt_iq_endpoint_w2}"
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/output/depth_flow_full_pbrt_iq_endpoint_w2_holefocus}"
 PYTHON_BIN="${PYTHON_BIN:-/home/lab507/anaconda3/envs/SVDC/bin/python}"
@@ -16,7 +16,7 @@ if [[ ! -f "${OUTPUT_DIR}/last.pt" ]]; then
 fi
 
 exec env CUDA_VISIBLE_DEVICES="${GPU}" GPU=0 DEVICE=cuda:0 \
-  "${PYTHON_BIN}" -u "${ROOT_DIR}/scripts/train_depth_flow_restoration.py" \
+  "${PYTHON_BIN}" -u "${ROOT_DIR}/scripts/flow/train_depth_flow_restoration.py" \
   --cache_dir "${ROOT_DIR}/depth_completion_cache/depth_cache_full_pbrt_plane_r12_iq" \
   --output_dir "${OUTPUT_DIR}" \
   --train_list "${ROOT_DIR}/output/full_pbrt_flow_lists_iq/train.txt" \

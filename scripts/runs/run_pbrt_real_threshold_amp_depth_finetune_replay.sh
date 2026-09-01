@@ -69,7 +69,7 @@ else
   REAL_SPLIT_ARGS+=(--val_count 80 --shuffle_split)
 fi
 
-"${PYTHON_BIN}" scripts/train_real_raw9_flow_finetune.py \
+"${PYTHON_BIN}" scripts/flow/train_real_raw9_flow_finetune.py \
   --raw_dir "${RAW_DIR}" \
   --depth_dir "${DEPTH_DIR}" \
   --pretrained_checkpoint "${PRETRAIN_CKPT}" \

@@ -80,7 +80,7 @@ run_b_evaluation() {
       continue
     fi
     evaluated+=("${checkpoint}")
-    "${PYTHON_BIN}" -u scripts/eval_depth_flow_propagation_refine.py \
+    "${PYTHON_BIN}" -u scripts/flow/eval_depth_flow_propagation_refine.py \
       --checkpoint "${checkpoint}" \
       --cache_dir "${CACHE_DIR}" \
       --sample_list "${LIST_DIR}/test.txt" \
@@ -97,7 +97,7 @@ run_b_evaluation() {
 
   checkpoint="${ROOT_DIR}/output/depth_flow_full_pbrt_iq_propagation_refine/best.pt"
   if [[ -f "${checkpoint}" ]]; then
-    "${PYTHON_BIN}" -u scripts/eval_depth_flow_propagation_refine.py \
+    "${PYTHON_BIN}" -u scripts/flow/eval_depth_flow_propagation_refine.py \
       --checkpoint "${checkpoint}" \
       --cache_dir "${CACHE_DIR}" \
       --sample_list "${LIST_DIR}/test.txt" \
@@ -117,12 +117,12 @@ run_a_training_and_evaluation() {
     OUTPUT_DIR="${out_root}" EPOCHS="${EPOCHS_A:-120}" \
     BATCH_SIZE="${BATCH_SIZE_A:-4}" LR="${LR_A:-2e-6}" \
     AMP="${AMP_A:-1}" VISUALIZE=0 \
-    bash scripts/runs/run_exp_a.sh
+    bash scripts/runs/flow/run_exp_a.sh
   [[ -f "${out_root}/best_hole.pt" ]] || { echo "[next-round][A] best_hole.pt missing" >&2; return 1; }
   for preserve in raw preserve_observed; do
     local args=()
     [[ "${preserve}" == "preserve_observed" ]] && args+=(--preserve_observed)
-    "${PYTHON_BIN}" -u scripts/eval_depth_flow_restoration.py \
+    "${PYTHON_BIN}" -u scripts/flow/eval_depth_flow_restoration.py \
       --checkpoint "${out_root}/best_hole.pt" \
       --cache_dir "${CACHE_DIR}" \
       --sample_list "${LIST_DIR}/test.txt" \
@@ -141,12 +141,12 @@ run_c_training_and_evaluation() {
   DEVICE="${DEVICE_C}" OUTPUT_DIR="${out_root}" \
     EPOCHS="${EPOCHS_C:-120}" BATCH_SIZE="${BATCH_SIZE_C:-2}" \
     LR="${LR_C:-1e-4}" WORKERS="${WORKERS_C:-0}" AMP="${AMP_C:-1}" \
-    bash scripts/runs/run_exp_c.sh
+    bash scripts/runs/flow/run_exp_c.sh
   [[ -f "${out_root}/best_hole.pt" ]] || { echo "[next-round][C] best_hole.pt missing" >&2; return 1; }
   for preserve in raw preserve_observed; do
     local args=()
     [[ "${preserve}" == "preserve_observed" ]] && args+=(--preserve_observed)
-    "${PYTHON_BIN}" -u scripts/eval_depth_flow_restoration.py \
+    "${PYTHON_BIN}" -u scripts/flow/eval_depth_flow_restoration.py \
       --checkpoint "${out_root}/best_hole.pt" \
       --cache_dir "${CACHE_DIR}" \
       --sample_list "${LIST_DIR}/test.txt" \

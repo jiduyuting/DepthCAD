@@ -34,4 +34,4 @@ MPLCONFIGDIR=${MPLCONFIGDIR:-/tmp/matplotlib-depthcad} \
 
 CHECKPOINT="${CHECKPOINT}" \
 OUTPUT_DIR="${PBRT_EVAL_DIR}" \
-bash scripts/runs/run_pbrt_val97_flow_eval.sh
+bash scripts/runs/flow/run_pbrt_val97_flow_eval.sh

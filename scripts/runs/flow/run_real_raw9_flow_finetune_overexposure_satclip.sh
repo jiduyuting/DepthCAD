@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 
 set -euo pipefail
 
@@ -49,7 +49,7 @@ echo "Output: ${OUTPUT_DIR}"
 echo "Split args: ${SPLIT_ARGS[*]}"
 echo "Saturation aug: train=${SAT_AUG_PROB} val=${VAL_SAT_AUG_PROB}"
 
-"${PYTHON_BIN}" -u scripts/train_real_raw9_flow_finetune.py \
+"${PYTHON_BIN}" -u scripts/flow/train_real_raw9_flow_finetune.py \
   --raw_dir "${RAW_DIR}" \
   --depth_dir "${DEPTH_DIR}" \
   --pretrained_checkpoint "${PRETRAIN_CKPT}" \
@@ -127,7 +127,7 @@ echo "Saturation aug: train=${SAT_AUG_PROB} val=${VAL_SAT_AUG_PROB}"
 
 echo
 echo "Suggested real-overexposed probe:"
-echo "\"${PYTHON_BIN}\" scripts/infer_real_raw9_flow.py \\"
+echo "\"${PYTHON_BIN}\" scripts/flow/infer_real_raw9_flow.py \\"
 echo "  --raw_dir ${RAW_DIR} \\"
 echo "  --depth_dir ${DEPTH_DIR} \\"
 echo "  --checkpoint ${OUTPUT_DIR}/best.pt \\"

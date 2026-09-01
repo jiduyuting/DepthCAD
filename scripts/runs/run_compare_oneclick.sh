@@ -285,7 +285,7 @@ run_pbrt_compare() {
   OUTPUT_DIR="$PBRT_FINAL_EVAL_DIR" \
   PBRT_SPLIT_JSON="$PBRT_SPLIT_JSON" \
   PYTHON_BIN="$PBRT_PYTHON_BIN" \
-    bash scripts/runs/run_pbrt_val97_flow_eval.sh
+    bash scripts/runs/flow/run_pbrt_val97_flow_eval.sh
 
   if [[ "$PBRT_RUN_PROPAINTER" != "0" ]]; then
     echo "[pbrt] exporting ProPainter case"

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 cd "${ROOT_DIR}"
 
 PYTHON_BIN="${PYTHON_BIN:-/home/lab507/anaconda3/envs/SVDC/bin/python}"
@@ -67,7 +67,7 @@ if [[ "${MODE}" == "smoke" ]]; then
   WORKERS=0
 fi
 
-${PYTHON_BIN} scripts/audit_flow_protocol.py \
+${PYTHON_BIN} scripts/flow/audit_flow_protocol.py \
   --train_list "${TRAIN_LIST}" --val_list "${VAL_LIST}" --test_list "${TEST_LIST}" \
   --max_samples "${AUDIT_MAX_SAMPLES:-1000}" --output "${RUN_ROOT}/protocol_audit.json" \
   >"${RUN_ROOT}/logs/protocol_audit.log"
@@ -116,7 +116,7 @@ prepare_resume() {
   if [[ ! -f "${output}/last.pt" ]]; then cp "${BASE_CHECKPOINT}" "${output}/last.pt"; fi
 }
 
-FLOW_CORE="${ROOT_DIR}/scripts/train_depth_flow_restoration.py --cache_dir ${CACHE_DIR} --train_list ${TRAIN_LIST} --val_list ${VAL_LIST} --device ${TRAIN_DEVICE} --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --backbone transformer_bottleneck --input_mode noisy_iq_amp --anchor_mode noisy_ns --eval_sampling_mode endpoint --selection_metric composite --hole_weight 5 --valid_weight 1 --grad_weight 0.5 --smooth_weight 0.02 --endpoint_weight 2 --val_mask_augment --mask_augment_block_sizes 4 8 12 --mask_augment_hole_ratios 0.15 0.20 --mask_augment_noise_depth_root ${NOISE_DEPTH_ROOT} ${AMP_FLAG}"
+FLOW_CORE="${ROOT_DIR}/scripts/flow/train_depth_flow_restoration.py --cache_dir ${CACHE_DIR} --train_list ${TRAIN_LIST} --val_list ${VAL_LIST} --device ${TRAIN_DEVICE} --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --backbone transformer_bottleneck --input_mode noisy_iq_amp --anchor_mode noisy_ns --eval_sampling_mode endpoint --selection_metric composite --hole_weight 5 --valid_weight 1 --grad_weight 0.5 --smooth_weight 0.02 --endpoint_weight 2 --val_mask_augment --mask_augment_block_sizes 4 8 12 --mask_augment_hole_ratios 0.15 0.20 --mask_augment_noise_depth_root ${NOISE_DEPTH_ROOT} ${AMP_FLAG}"
 FLOW_AUG="${FLOW_CORE} --mask_augment --mask_augment_probability 0.50"
 
 E0="${RUN_ROOT}/stage1/e0_endpoint2_fixed_mask"
@@ -135,17 +135,17 @@ run_wave \
   "e3::${PYTHON_BIN} -u ${FLOW_AUG} --output_dir ${E3} --epochs ${STAGE1_EPOCHS} --lr 1e-5 --endpoint_weight 4 --t0_sample_probability 0.25 --boundary_weight 0.5 --resume"
 
 SELECT_JSON="${RUN_ROOT}/selected_flow.json"
-SELECTED_FLOW="$(${PYTHON_BIN} scripts/manage_flow_sota_experiments.py select --root "${RUN_ROOT}" --output "${SELECT_JSON}")"
+SELECTED_FLOW="$(${PYTHON_BIN} scripts/flow/manage_flow_sota_experiments.py select --root "${RUN_ROOT}" --output "${SELECT_JSON}")"
 echo "[selected flow] ${SELECTED_FLOW}"
 
 ANCHOR_CACHE="${RUN_ROOT}/anchor_cache"
-run_on_gpu "${GPU_IDS[0]}" "${PYTHON_BIN}" -u scripts/cache_flow_anchors.py \
+run_on_gpu "${GPU_IDS[0]}" "${PYTHON_BIN}" -u scripts/flow/cache_flow_anchors.py \
   --cache_dir "${CACHE_DIR}" --pretrained_checkpoint "${SELECTED_FLOW}" --output_dir "${ANCHOR_CACHE}" \
   --train_list "${TRAIN_LIST}" --val_list "${VAL_LIST}" --test_list "${TEST_LIST}" \
   --batch_size "${BATCH_SIZE}" --num_workers "${WORKERS}" --device "${TRAIN_DEVICE}" ${AMP_FLAG} \
   >"${RUN_ROOT}/logs/cache_anchors.log" 2>&1
 
-REFINE_COMMON="${ROOT_DIR}/scripts/train_depth_flow_propagation_refine.py --cache_dir ${CACHE_DIR} --pretrained_checkpoint ${SELECTED_FLOW} --anchor_cache_dir ${ANCHOR_CACHE} --train_list ${TRAIN_LIST} --val_list ${VAL_LIST} --device ${TRAIN_DEVICE} --epochs ${STAGE2_EPOCHS} --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --lr 2e-5 --selection_metric composite --mask_weight 5 --valid_weight 1 --coarse_weight 0.5 --boundary_grad_weight 0.75 --boundary_l1_weight 0.2 ${AMP_FLAG}"
+REFINE_COMMON="${ROOT_DIR}/scripts/flow/train_depth_flow_propagation_refine.py --cache_dir ${CACHE_DIR} --pretrained_checkpoint ${SELECTED_FLOW} --anchor_cache_dir ${ANCHOR_CACHE} --train_list ${TRAIN_LIST} --val_list ${VAL_LIST} --device ${TRAIN_DEVICE} --epochs ${STAGE2_EPOCHS} --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --lr 2e-5 --selection_metric composite --mask_weight 5 --valid_weight 1 --coarse_weight 0.5 --boundary_grad_weight 0.75 --boundary_l1_weight 0.2 ${AMP_FLAG}"
 R1="${RUN_ROOT}/stage2/r1_local_refine"
 R2="${RUN_ROOT}/stage2/r2_global_refine"
 R3="${RUN_ROOT}/stage2/r3_global_refine_strong"
@@ -159,18 +159,18 @@ run_wave \
 
 EVAL_JOBS=()
 if [[ -f "${CURRENT_REFINE_CHECKPOINT}" ]]; then
-  EVAL_JOBS+=("eval_current_refine::${PYTHON_BIN} -u ${ROOT_DIR}/scripts/eval_depth_flow_propagation_refine.py --checkpoint ${CURRENT_REFINE_CHECKPOINT} --sample_list ${TEST_LIST} --split all --output_dir ${RUN_ROOT}/test_eval/current_refine_baseline --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --device ${TRAIN_DEVICE}")
+  EVAL_JOBS+=("eval_current_refine::${PYTHON_BIN} -u ${ROOT_DIR}/scripts/flow/eval_depth_flow_propagation_refine.py --checkpoint ${CURRENT_REFINE_CHECKPOINT} --sample_list ${TEST_LIST} --split all --output_dir ${RUN_ROOT}/test_eval/current_refine_baseline --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --device ${TRAIN_DEVICE}")
 fi
 for experiment in "${E0}" "${E1}" "${E2}" "${E3}"; do
   name="$(basename "${experiment}")"
-  EVAL_JOBS+=("eval_${name}::${PYTHON_BIN} -u ${ROOT_DIR}/scripts/eval_depth_flow_restoration.py --checkpoint ${experiment}/best.pt --sample_list ${TEST_LIST} --split all --output_dir ${RUN_ROOT}/test_eval/${name} --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --device ${TRAIN_DEVICE} --sampling_mode endpoint")
+  EVAL_JOBS+=("eval_${name}::${PYTHON_BIN} -u ${ROOT_DIR}/scripts/flow/eval_depth_flow_restoration.py --checkpoint ${experiment}/best.pt --sample_list ${TEST_LIST} --split all --output_dir ${RUN_ROOT}/test_eval/${name} --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --device ${TRAIN_DEVICE} --sampling_mode endpoint")
 done
 for experiment in "${R1}" "${R2}" "${R3}"; do
   name="$(basename "${experiment}")"
-  EVAL_JOBS+=("eval_${name}::${PYTHON_BIN} -u ${ROOT_DIR}/scripts/eval_depth_flow_propagation_refine.py --checkpoint ${experiment}/best.pt --sample_list ${TEST_LIST} --split all --output_dir ${RUN_ROOT}/test_eval/${name} --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --device ${TRAIN_DEVICE} --anchor_cache_dir ${ANCHOR_CACHE}")
+  EVAL_JOBS+=("eval_${name}::${PYTHON_BIN} -u ${ROOT_DIR}/scripts/flow/eval_depth_flow_propagation_refine.py --checkpoint ${experiment}/best.pt --sample_list ${TEST_LIST} --split all --output_dir ${RUN_ROOT}/test_eval/${name} --batch_size ${BATCH_SIZE} --num_workers ${WORKERS} --device ${TRAIN_DEVICE} --anchor_cache_dir ${ANCHOR_CACHE}")
 done
 run_wave "${EVAL_JOBS[@]}"
 
-${PYTHON_BIN} scripts/manage_flow_sota_experiments.py summarize \
+${PYTHON_BIN} scripts/flow/manage_flow_sota_experiments.py summarize \
   --root "${RUN_ROOT}" --output "${RUN_ROOT}/summary.json"
 echo "Results: ${RUN_ROOT}/summary.md"

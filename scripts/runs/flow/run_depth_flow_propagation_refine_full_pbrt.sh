@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 PYTHON_BIN="${PYTHON_BIN:-/home/lab507/anaconda3/envs/SVDC/bin/python}"
 
 CACHE_DIR="${CACHE_DIR:-${ROOT_DIR}/depth_completion_cache/depth_cache_full_pbrt_plane_r12_iq}"
@@ -33,7 +33,7 @@ VISUALIZE="${VISUALIZE:-1}"
 VIS_MAX_SAMPLES="${VIS_MAX_SAMPLES:-12}"
 
 train_args=(
-  "${ROOT_DIR}/scripts/train_depth_flow_propagation_refine.py"
+  "${ROOT_DIR}/scripts/flow/train_depth_flow_propagation_refine.py"
   --cache_dir "${CACHE_DIR}"
   --pretrained_checkpoint "${PRETRAINED_CHECKPOINT}"
   --output_dir "${OUTPUT_DIR}"
@@ -73,7 +73,7 @@ if [[ "${EVAL_AFTER}" == "1" ]]; then
   EVAL_CHECKPOINT="${EVAL_CHECKPOINT:-${OUTPUT_DIR}/best.pt}"
   EVAL_OUTPUT_DIR="${EVAL_OUTPUT_DIR:-${OUTPUT_DIR}/eval_test_best}"
   eval_args=(
-    "${ROOT_DIR}/scripts/eval_depth_flow_propagation_refine.py"
+    "${ROOT_DIR}/scripts/flow/eval_depth_flow_propagation_refine.py"
     --checkpoint "${EVAL_CHECKPOINT}"
     --sample_list "${TEST_LIST}"
     --split all

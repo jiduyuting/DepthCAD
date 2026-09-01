@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 
 set -euo pipefail
 
@@ -19,7 +19,7 @@ echo "Pretrained anchor source: ${PRETRAIN_CKPT}"
 echo "Split JSON: ${SPLIT_JSON}"
 echo "Output: ${OUTPUT_DIR}"
 
-"${PYTHON_BIN}" -u scripts/train_real_raw9_propagation_refine.py \
+"${PYTHON_BIN}" -u scripts/flow/train_real_raw9_propagation_refine.py \
   --raw_dir "${RAW_DIR}" \
   --depth_dir "${DEPTH_DIR}" \
   --pretrained_checkpoint "${PRETRAIN_CKPT}" \

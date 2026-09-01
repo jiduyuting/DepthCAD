@@ -5,9 +5,9 @@ set -euo pipefail
 # by the existing Stage-2 job.  Each experiment is evaluated on the fixed test
 # split after training, both with raw predictions and observed-pixel merging.
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 cd "${ROOT_DIR}"
 
 PYTHON_BIN="${PYTHON_BIN:-/home/lab507/anaconda3/envs/SVDC/bin/python}"
@@ -98,7 +98,7 @@ echo "Stage-2 remains untouched; using GPU ${GPU_MASK}, ${GPU_CAPACITY}, ${GPU_D
 
 echo "[launch] mask_match on GPU ${GPU_MASK}"
 "${SETSID_BIN}" env CUDA_VISIBLE_DEVICES="${GPU_MASK}" "${PYTHON_BIN}" -u \
-  "${ROOT_DIR}/scripts/train_depth_flow_restoration.py" \
+  "${ROOT_DIR}/scripts/flow/train_depth_flow_restoration.py" \
   "${COMMON_ARGS[@]}" \
   --output_dir "${RUN_ROOT}/mask_match" \
   --device cuda:0 \
@@ -118,7 +118,7 @@ JOB_PIDS+=("${PID_MASK}")
 
 echo "[launch] large_b48 on GPU ${GPU_CAPACITY}"
 "${SETSID_BIN}" env CUDA_VISIBLE_DEVICES="${GPU_CAPACITY}" "${PYTHON_BIN}" -u \
-  "${ROOT_DIR}/scripts/train_depth_flow_restoration.py" \
+  "${ROOT_DIR}/scripts/flow/train_depth_flow_restoration.py" \
   "${COMMON_ARGS[@]}" \
   --output_dir "${RUN_ROOT}/large_b48" \
   --device cuda:0 \
@@ -137,7 +137,7 @@ JOB_PIDS+=("${PID_CAPACITY}")
 
 echo "[launch] hole_distance_focus on GPU ${GPU_DISTANCE}"
 "${SETSID_BIN}" env CUDA_VISIBLE_DEVICES="${GPU_DISTANCE}" "${PYTHON_BIN}" -u \
-  "${ROOT_DIR}/scripts/train_depth_flow_restoration.py" \
+  "${ROOT_DIR}/scripts/flow/train_depth_flow_restoration.py" \
   "${COMMON_ARGS[@]}" \
   --output_dir "${RUN_ROOT}/hole_distance_focus" \
   --device cuda:0 \
@@ -188,7 +188,7 @@ run_eval() {
     local extra=()
     [[ "${mode}" == "preserve_observed" ]] && extra+=(--preserve_observed)
     CUDA_VISIBLE_DEVICES="${gpu}" "${PYTHON_BIN}" -u \
-      "${ROOT_DIR}/scripts/eval_depth_flow_restoration.py" \
+      "${ROOT_DIR}/scripts/flow/eval_depth_flow_restoration.py" \
       --checkpoint "${checkpoint}" \
       --cache_dir "${CACHE_DIR}" \
       --sample_list "${LIST_DIR}/test.txt" \

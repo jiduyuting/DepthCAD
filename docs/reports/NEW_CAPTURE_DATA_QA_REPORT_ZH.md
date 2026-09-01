@@ -10,7 +10,7 @@
 - 原始 depth：`(424, 512)`，`float32`，无 NaN/Inf。
 - 原始 IQ：`(424, 512, 9)`，`float32`，无 NaN/Inf。
 - depth 单位是毫米，数值主要在 `500` 到 `4500`，当前推理脚本按米处理，所以必须除以 `1000`。
-- IQ 原始布局是 HWC，即 `(H,W,9)`；`scripts/infer_real_raw9_flow.py` 要求 `(9,H,W)`，所以必须转置。
+- IQ 原始布局是 HWC，即 `(H,W,9)`；`scripts/flow/infer_real_raw9_flow.py` 要求 `(9,H,W)`，所以必须转置。
 - raw9+depth 脚本按同名 stem 配对；原始文件名是 `iq_0000.npy` 与 `depth_0000.npy`，原样会配不到，需要统一成 `0000.npy`。
 - `data/__MACOSX` 是压缩包带来的 macOS 元数据，测试时应忽略。
 
@@ -59,7 +59,7 @@
 ### Depth-only good 子集
 
 ```bash
-/home/lab507/anaconda3/envs/depthcad_zimage/bin/python scripts/infer_real_depth_flow.py \
+/home/lab507/anaconda3/envs/depthcad_zimage/bin/python scripts/flow/infer_real_depth_flow.py \
   --input_dir data/prepared_new_capture/good/depth_m \
   --checkpoint output/depth_flow_restoration_noisy_ns_n1000_endpoint/best.pt \
   --output_dir output/new_capture_depth_only_flow_good \
@@ -85,7 +85,7 @@
 ### Raw9+depth good 子集
 
 ```bash
-/home/lab507/anaconda3/envs/depthcad_zimage/bin/python scripts/infer_real_raw9_flow.py \
+/home/lab507/anaconda3/envs/depthcad_zimage/bin/python scripts/flow/infer_real_raw9_flow.py \
   --raw_dir data/prepared_new_capture/good/raw9_chw \
   --depth_dir data/prepared_new_capture/good/depth_m \
   --checkpoint output/real_raw9_flow_finetune_overexposure_satclip_from_generalized_e20/best.pt \
@@ -114,7 +114,7 @@
 ### Raw9+depth 全量样本
 
 ```bash
-/home/lab507/anaconda3/envs/depthcad_zimage/bin/python scripts/infer_real_raw9_flow.py \
+/home/lab507/anaconda3/envs/depthcad_zimage/bin/python scripts/flow/infer_real_raw9_flow.py \
   --raw_dir data/prepared_new_capture/all/raw9_chw \
   --depth_dir data/prepared_new_capture/all/depth_m \
   --checkpoint output/real_raw9_flow_finetune_overexposure_satclip_from_generalized_e20/best.pt \

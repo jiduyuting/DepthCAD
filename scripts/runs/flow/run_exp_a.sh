@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 cd "${ROOT_DIR}"
 
 PYTHON_BIN="${PYTHON_BIN:-/home/lab507/anaconda3/envs/SVDC/bin/python}"
@@ -28,7 +28,7 @@ fi
 echo "[exp-a] Conservative fine-tune from the epoch-108 Flow checkpoint"
 echo "[exp-a] output=${OUTPUT_DIR}"
 
-"${PYTHON_BIN}" -u scripts/train_depth_flow_restoration.py \
+"${PYTHON_BIN}" -u scripts/flow/train_depth_flow_restoration.py \
   --cache_dir "${CACHE_DIR}" \
   --output_dir "${OUTPUT_DIR}" \
   --train_list "${LIST_DIR}/train.txt" \

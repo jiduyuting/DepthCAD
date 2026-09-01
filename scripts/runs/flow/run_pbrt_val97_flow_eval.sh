@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 set -euo pipefail
 
 PYTHON_BIN=${PYTHON_BIN:-/home/lab507/anaconda3/envs/SVDC/bin/python}
@@ -15,7 +15,7 @@ NUM_WORKERS=${NUM_WORKERS:-0}
 
 "${PYTHON_BIN}" -c "import json; d=json.load(open('${PBRT_SPLIT_JSON}')); open('${SAMPLE_LIST}', 'w').write('\\n'.join(d['val']) + '\\n'); print(len(d['val']))"
 
-"${PYTHON_BIN}" scripts/eval_depth_flow_restoration.py \
+"${PYTHON_BIN}" scripts/flow/eval_depth_flow_restoration.py \
   --checkpoint "${CHECKPOINT}" \
   --sample_list "${SAMPLE_LIST}" \
   --split all \

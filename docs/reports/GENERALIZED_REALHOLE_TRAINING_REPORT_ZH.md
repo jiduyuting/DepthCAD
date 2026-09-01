@@ -15,7 +15,7 @@
 修改：
 
 ```text
-scripts/train_synthetic_realhole_flow_pretrain.py
+scripts/flow/train_synthetic_realhole_flow_pretrain.py
 ```
 
 新增参数：
@@ -29,7 +29,7 @@ scripts/train_synthetic_realhole_flow_pretrain.py
 新增脚本：
 
 ```text
-scripts/runs/run_synthetic_realhole_generalized_pretrain.sh
+scripts/runs/flow/run_synthetic_realhole_generalized_pretrain.sh
 ```
 
 默认配置：
@@ -108,7 +108,7 @@ corrupted depth + mask/confidence + amplitude features
 
 ```bash
 EPOCHS=20 OUTPUT_DIR=output/synthetic_realhole_flow_pretrain_generalized_split_e20 \
-  bash scripts/runs/run_synthetic_realhole_generalized_pretrain.sh
+  bash scripts/runs/flow/run_synthetic_realhole_generalized_pretrain.sh
 ```
 
 2. 用 e20 checkpoint 作为新的 ToF-aware pretrain，再微调真实 raw9：

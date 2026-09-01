@@ -6,6 +6,7 @@ A PyTorch implementation of Depth Denoising with Confidence-Aware Diffusion mode
 
 - `scripts/*.py`: training, inference, and evaluation entry points.
 - `scripts/runs/*.sh`: reproducible experiment launchers.
+- `scripts/flow/`, `scripts/runs/flow/`: Flow-based restoration code and its experiment launchers.
 - `scripts/data_prep/`, `scripts/analysis/`, `scripts/tests/`: dataset preparation, analysis, and smoke-test utilities.
 - `docs/reports/`: experiment plans, benchmark reports, and result notes.
 - `configs/`, `integrations/`, `pbrt_dataset/`, `flat_dataset/`: reusable project modules.

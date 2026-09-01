@@ -17,7 +17,7 @@ mkdir -p "${LOG_DIR}"
 echo "Starting parallel training: Flow=${FLOW_GPU}, CompletionFormer=${COMPLETIONFORMER_GPU}, DEPTHOR=${DEPTHOR_GPU}"
 
 CUDA_VISIBLE_DEVICES="${FLOW_GPU}" GPU=0 DEVICE=cuda:0 \
-  bash train_flow.sh >"${LOG_DIR}/flow.log" 2>&1 &
+  bash scripts/runs/flow/train_flow.sh >"${LOG_DIR}/flow.log" 2>&1 &
 flow_pid=$!
 
 CUDA_VISIBLE_DEVICES="${COMPLETIONFORMER_GPU}" GPU=0 \

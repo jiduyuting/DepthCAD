@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 
 set -euo pipefail
 
@@ -24,7 +24,7 @@ echo "Checkpoint: ${CHECKPOINT}"
 echo "Output: ${OUTPUT_DIR}"
 echo "Samples: ${SAMPLES[*]}"
 
-"${PYTHON_BIN}" scripts/infer_real_raw9_propagation_refine.py \
+"${PYTHON_BIN}" scripts/flow/infer_real_raw9_propagation_refine.py \
   --raw_dir "${RAW_DIR}" \
   --depth_dir "${DEPTH_DIR}" \
   --checkpoint "${CHECKPOINT}" \

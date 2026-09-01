@@ -133,14 +133,14 @@ FLOW_LIST_DIR="${FLOW_LIST_DIR:-${ROOT_DIR}/output/full_pbrt_flow_lists_iq}"
 FLOW_OUTPUT="${FLOW_OUTPUT:-${ROOT_DIR}/output/depth_flow_full_pbrt_iq_endpoint_w2}"
 if [[ "${TRAIN_FLOW}" == "1" && -f "${UNIFIED_MANIFEST}" ]]; then
   run_step "Prepare Ours-Flow lists" \
-    "${PYTHON_BASE}" scripts/make_full_pbrt_flow_lists.py \
+    "${PYTHON_BASE}" scripts/flow/make_full_pbrt_flow_lists.py \
       --manifest "${UNIFIED_MANIFEST}" --output_dir "${FLOW_LIST_DIR}"
   flow_resume=()
   if [[ "${RESUME}" == "1" && -f "${FLOW_OUTPUT}/last.pt" ]]; then
     flow_resume+=(--resume)
   fi
   run_step "Train Ours-Flow-FullPBRT" \
-    "${PYTHON_FLOW}" -u scripts/train_depth_flow_restoration.py \
+    "${PYTHON_FLOW}" -u scripts/flow/train_depth_flow_restoration.py \
       --cache_dir "${ROOT_DIR}/depth_completion_cache/depth_cache_full_pbrt_plane_r12_iq" \
       --output_dir "${FLOW_OUTPUT}" \
       --train_list "${FLOW_LIST_DIR}/train.txt" \
@@ -159,7 +159,7 @@ if [[ "${TRAIN_FLOW}" == "1" && -f "${UNIFIED_MANIFEST}" ]]; then
 fi
 if [[ "${RUN_FLOW}" == "1" && -f "${FLOW_CKPT}" ]]; then
   run_step "Evaluate Ours-Flow-FullPBRT" \
-    "${PYTHON_FLOW}" scripts/eval_flow_unified_test.py \
+    "${PYTHON_FLOW}" scripts/flow/eval_flow_unified_test.py \
       --manifest "${UNIFIED_MANIFEST}" --checkpoint "${FLOW_CKPT}" \
       --device "${DEVICE}" --workers "${WORKERS:-0}" \
       --output "${OUTPUT_ROOT}/ours_flow/summary.json"

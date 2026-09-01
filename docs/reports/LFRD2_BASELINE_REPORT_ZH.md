@@ -136,4 +136,4 @@ LFRD2 is highly relevant as a learned fractional reaction-diffusion framework fo
 
 1. 将 DepthCAD raw9 重新整理成 LFRD2 的训练格式，或改 LFRD2 输入层支持 `9 x 240 x 320`。
 2. 用当前真实 raw9/depth masked self-supervision fine-tune LFRD2。
-3. 再用同一个 `scripts/real_raw9_masked_self_test.py` 口径报告结果。
+3. 再用同一个 `scripts/flow/real_raw9_masked_self_test.py` 口径报告结果。

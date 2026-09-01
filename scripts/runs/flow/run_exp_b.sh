@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 cd "${ROOT_DIR}"
 
 echo "[exp-b] Flow-anchor propagation + refinement"
@@ -19,4 +19,4 @@ EVAL_AFTER="${EVAL_AFTER:-1}" \
 VISUALIZE="${VISUALIZE:-1}" \
 PRETRAINED_CHECKPOINT="${PRETRAINED_CHECKPOINT:-${ROOT_DIR}/output/depth_flow_full_pbrt_iq_endpoint_w2/best.pt}" \
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/output/depth_flow_full_pbrt_iq_propagation_refine}" \
-  bash scripts/runs/run_depth_flow_propagation_refine_full_pbrt.sh
+  bash scripts/runs/flow/run_depth_flow_propagation_refine_full_pbrt.sh

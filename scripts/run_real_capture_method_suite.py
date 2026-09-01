@@ -399,7 +399,7 @@ def run_methods(args, methods, samples):
         out = method_root / "depth_only_flow"
         cmd = [
             args.python_bin,
-            "infer_real_depth_flow.py",
+            "scripts/flow/infer_real_depth_flow.py",
             "--input_dir",
             depth_m,
             "--checkpoint",
@@ -415,7 +415,7 @@ def run_methods(args, methods, samples):
         out = method_root / "raw9_satclip"
         cmd = [
             args.python_bin,
-            "infer_real_raw9_flow.py",
+            "scripts/flow/infer_real_raw9_flow.py",
             "--raw_dir",
             raw9,
             "--depth_dir",
@@ -433,7 +433,7 @@ def run_methods(args, methods, samples):
         out = method_root / "raw9_realholes"
         cmd = [
             args.python_bin,
-            "infer_real_raw9_flow.py",
+            "scripts/flow/infer_real_raw9_flow.py",
             "--raw_dir",
             raw9,
             "--depth_dir",
@@ -451,7 +451,7 @@ def run_methods(args, methods, samples):
         out = method_root / "after_synth"
         cmd = [
             args.python_bin,
-            "infer_real_raw9_flow.py",
+            "scripts/flow/infer_real_raw9_flow.py",
             "--raw_dir",
             raw9,
             "--depth_dir",
@@ -481,7 +481,7 @@ def run_methods(args, methods, samples):
         out = method_root / "propagation"
         cmd = [
             args.python_bin,
-            "infer_real_raw9_propagation_refine.py",
+            "scripts/flow/infer_real_raw9_propagation_refine.py",
             "--raw_dir",
             raw9,
             "--depth_dir",

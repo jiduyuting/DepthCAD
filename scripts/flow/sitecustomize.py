@@ -1,11 +1,11 @@
-"""Make the repository root and flat script modules importable for direct CLI runs."""
+"""Keep direct execution of Flow entry points compatible with flat imports."""
 
 from pathlib import Path
 import sys
 
-SCRIPTS_DIR = Path(__file__).resolve().parent
+FLOW_DIR = Path(__file__).resolve().parent
+SCRIPTS_DIR = FLOW_DIR.parent
 REPO_ROOT = SCRIPTS_DIR.parent
-FLOW_DIR = SCRIPTS_DIR / "flow"
 
 for path in (REPO_ROOT, SCRIPTS_DIR, FLOW_DIR):
     path_str = str(path)

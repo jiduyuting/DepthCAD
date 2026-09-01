@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
-export PYTHONPATH="${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 set -euo pipefail
 
 PYTHON_BIN="${PYTHON_BIN:-/home/lab507/anaconda3/envs/control/bin/python}"
@@ -23,7 +23,7 @@ VAL_MASKS_PER_SAMPLE="${VAL_MASKS_PER_SAMPLE:-1}"
 COMPONENT_VAL_RATIO="${COMPONENT_VAL_RATIO:-0.25}"
 CUDA_DEVICE="${CUDA_DEVICE:-cuda:0}"
 
-"${PYTHON_BIN}" -u scripts/train_synthetic_realhole_flow_pretrain.py \
+"${PYTHON_BIN}" -u scripts/flow/train_synthetic_realhole_flow_pretrain.py \
   --cache_dir "${CACHE_DIR}" \
   --train_list "${TRAIN_LIST}" \
   --val_list "${VAL_LIST}" \
