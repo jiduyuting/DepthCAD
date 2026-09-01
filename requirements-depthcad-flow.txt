@@ -1,0 +1,20 @@
+# Combined minimal dependencies for DepthCAD and scripts/flow/.
+# Install torch and torchvision separately from the CUDA wheel index first.
+numpy==1.26.0
+opencv-python==4.10.0.84
+scipy==1.13.1
+Pillow==11.0.0
+matplotlib==3.9.2
+tqdm==4.66.6
+packaging>=21
+
+accelerate==0.34.0
+transformers==4.44.2
+huggingface-hub==0.36.0
+datasets==2.21.0
+diffusers==0.31.0
+xformers==0.0.27.post2
+tensorboard>=2.14,<3
+
+# Optional: only needed with train_pbrt.py --use_8bit_adam.
+# bitsandbytes==0.43.3

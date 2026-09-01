@@ -49,6 +49,20 @@ python -m pip install matplotlib tqdm
 python -m pip install -r requirements-flow.txt
 ```
 
+如果要在同一个环境中运行 DepthCAD 和 Flow，使用合并依赖文件：
+
+```bash
+python -m pip install \
+  torch==2.4.0 torchvision==0.19.0 \
+  --index-url https://download.pytorch.org/whl/cu121
+python -m pip install -r requirements-depthcad-flow.txt
+```
+
+这套组合对应当前已验证的 `control` 环境。`xformers` 是全量 DepthCAD 启动器
+显式启用的依赖；`bitsandbytes` 只有使用 `--use_8bit_adam` 时才需要安装。
+如果目标机器的 CUDA 不是 12.1，只替换第一条命令中的 PyTorch wheel，其他版本
+保持不变并先做导入 smoke test。
+
 `requirements-flow.txt` 不锁定 PyTorch，因为 PyTorch 必须匹配目标机器的 CUDA。
 例如当前 `control` 环境使用的是 PyTorch 2.4.0 + cu121、torchvision 0.19.0；可先
 安装对应 CUDA wheel，再安装上面的文件：
