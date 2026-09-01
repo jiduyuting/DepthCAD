@@ -1,12 +1,57 @@
+# Python and notebook-generated files
 **/__pycache__/
-/output/
-/results/
+*.py[cod]
+/.pytest_cache/
+/.ipynb_checkpoints/
+
+# Local datasets and derived arrays/images
+/data/
+/dataset/
+/raw/
+/depth/
+/pic/
+/picture/
+/propainter_depth_test/
+/hole_test_output/
 /flat_dataset/data/
 /pbrt/
 /pbrt_dataset/data/
-/pbrt_dataset/data_512/
-/pbrt_dataset/data_old/
-/z_image_turbo_analysis/
-HYPIR_sd2.pth
+/pbrt_dataset/data_*/
+/pbrt_dataset/pbrt_dataset/
+/depth_completion_cache/
+
+# Training checkpoints, downloaded models and experiment outputs
+/models/
+/output/
 /out_pbrt/
 /out/
+/results/
+/runs/
+/wandb/
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.bin
+
+# Logs, local archives and copied legacy experiments
+*.log
+/old/
+/__MACOSX/
+.DS_Store
+
+# Research papers are local references, not code-repository contents
+/paper/
+/*.pdf
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+credentials*.json
+
+# Existing project-specific ignores
+/z_image_turbo_analysis/
+HYPIR_sd2.pth

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 from pathlib import Path
 
-def convert_npy_to_png(input_dir, output_dir, cmap='inferno'):
+def convert_npy_to_png(input_dir, output_dir, cmap='inferno', channel='mean'):
     """
     将指定目录下的所有 .npy 文件转换为 PNG 图像
 
@@ -11,6 +11,7 @@ def convert_npy_to_png(input_dir, output_dir, cmap='inferno'):
         input_dir: 包含 .npy 文件的输入目录
         output_dir: PNG 输出目录
         cmap: matplotlib 颜色映射 (默认 'inferno')
+        channel: 多通道处理方式: 'mean'(平均), 'first'(第一通道), int(指定通道)
     """
     input_path = Path(input_dir)
     output_path = Path(output_dir)
@@ -28,6 +29,7 @@ def convert_npy_to_png(input_dir, output_dir, cmap='inferno'):
 
     print(f"找到 {total} 个 .npy 文件")
     print(f"输出目录: {output_dir}")
+    print(f"通道处理: {channel}")
     print("=" * 50)
 
     success_count = 0
@@ -37,6 +39,21 @@ def convert_npy_to_png(input_dir, output_dir, cmap='inferno'):
         try:
             # 加载数据
             data = np.load(npy_file)
+
+            # 处理 (C, H, W) 格式 -> 转置为 (H, W, C)
+            if data.ndim == 3 and data.shape[0] < data.shape[2]:
+                # 可能是 (C, H, W) 格式
+                data = np.transpose(data, (1, 2, 0))
+                print(f"  [调试] 转置为 (H, W, C): {data.shape}")
+
+            # 处理多通道: 如果是 (H, W, C) 格式但 C > 4，取平均或指定通道
+            if data.ndim == 3 and data.shape[2] > 4:
+                if channel == 'mean':
+                    data = data.mean(axis=2)
+                elif channel == 'first':
+                    data = data[:, :, 0]
+                elif isinstance(channel, int):
+                    data = data[:, :, channel]
 
             # 处理 inf 和 NaN
             if np.isinf(data).any():
@@ -74,8 +91,8 @@ def convert_npy_to_png(input_dir, output_dir, cmap='inferno'):
 
 if __name__ == "__main__":
     # 配置
-    INPUT_DIR = "/data/pre_student/GJ/DepthCAD/pbrt/data_20000_masked"
-    OUTPUT_DIR = "/data/pre_student/GJ/DepthCAD/pbrt/data_20000_masked_png"
+    INPUT_DIR = "/data/pre_student/hcy/pbrt/gt/bathroom/0"
+    OUTPUT_DIR = "/data/pre_student/GJ/DepthCAD/pbrt/bathroom/0"
 
     # 可选颜色映射: 'viridis', 'inferno', 'plasma', 'jet', 'gray', 'hot', 'cool'
     CMAP = 'inferno'

@@ -19,6 +19,56 @@ class PBRTDataset(datasets.GeneratorBasedBuilder):
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(name="default", version=_VERSION, description="PBRT dataset without mask"),
         datasets.BuilderConfig(name="masked", version=_VERSION, description="PBRT dataset with amplitude mask"),
+        datasets.BuilderConfig(
+            name="kinect_holeaware",
+            version=_VERSION,
+            description="PBRT dataset built from Kinect-style hole caches for DepthCAD-HoleAware training",
+        ),
+        datasets.BuilderConfig(
+            name="unified_pbrt_train",
+            version=_VERSION,
+            description="Unified PBRT train split prepared from depth_completion_cache",
+        ),
+        datasets.BuilderConfig(
+            name="unified_pbrt_val",
+            version=_VERSION,
+            description="Unified PBRT validation split prepared from depth_completion_cache",
+        ),
+        datasets.BuilderConfig(
+            name="unified_pbrt_test",
+            version=_VERSION,
+            description="Unified PBRT test split prepared from depth_completion_cache",
+        ),
+        datasets.BuilderConfig(
+            name="full_pbrt_train",
+            version=_VERSION,
+            description="Full PBRT train split excluding the fixed seed123 test set",
+        ),
+        datasets.BuilderConfig(
+            name="full_pbrt_val",
+            version=_VERSION,
+            description="Full PBRT validation split excluding the fixed seed123 test set",
+        ),
+        datasets.BuilderConfig(
+            name="full_pbrt_test",
+            version=_VERSION,
+            description="Fixed seed123 PBRT test split for full-PBRT experiments",
+        ),
+        datasets.BuilderConfig(
+            name="sd21_full_pbrt_train",
+            version=_VERSION,
+            description="8910-sample unified PBRT train split exported for SD2.1",
+        ),
+        datasets.BuilderConfig(
+            name="sd21_full_pbrt_val",
+            version=_VERSION,
+            description="990-sample unified PBRT validation split exported for SD2.1",
+        ),
+        datasets.BuilderConfig(
+            name="sd21_full_pbrt_test",
+            version=_VERSION,
+            description="100-sample seed123 PBRT holdout exported for SD2.1",
+        ),
     ]
 
     def _info(self):
@@ -52,6 +102,25 @@ class PBRTDataset(datasets.GeneratorBasedBuilder):
             ideal_dir = str(base / "ideal_IQ_masked")
             noise_dir = str(base / "noise_IQ_masked")
             conf_dir = str(base / "confidence_masked")
+        elif self.config.name == "kinect_holeaware":
+            ideal_dir = str(base / "ideal_IQ_kinect_holeaware")
+            noise_dir = str(base / "noise_IQ_kinect_holeaware")
+            conf_dir = str(base / "confidence_kinect_holeaware")
+        elif self.config.name in {"unified_pbrt_train", "unified_pbrt_val", "unified_pbrt_test"}:
+            split = self.config.name.rsplit("_", 1)[-1]
+            ideal_dir = str(base / f"ideal_IQ_unified_pbrt_{split}")
+            noise_dir = str(base / f"noise_IQ_unified_pbrt_{split}")
+            conf_dir = str(base / f"confidence_unified_pbrt_{split}")
+        elif self.config.name in {"full_pbrt_train", "full_pbrt_val", "full_pbrt_test"}:
+            split = self.config.name.rsplit("_", 1)[-1]
+            ideal_dir = str(base / f"ideal_IQ_full_pbrt_{split}")
+            noise_dir = str(base / f"noise_IQ_full_pbrt_{split}")
+            conf_dir = str(base / f"confidence_full_pbrt_{split}")
+        elif self.config.name in {"sd21_full_pbrt_train", "sd21_full_pbrt_val", "sd21_full_pbrt_test"}:
+            split = self.config.name.rsplit("_", 1)[-1]
+            ideal_dir = str(base / f"ideal_IQ_sd21_full_pbrt_{split}")
+            noise_dir = str(base / f"noise_IQ_sd21_full_pbrt_{split}")
+            conf_dir = str(base / f"confidence_sd21_full_pbrt_{split}")
         else:  # default
             ideal_dir = str(base / "ideal_IQ")
             noise_dir = str(base / "noise_IQ")

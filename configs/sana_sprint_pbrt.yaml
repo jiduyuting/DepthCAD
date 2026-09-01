@@ -1,0 +1,133 @@
+# Sana Sprint (SCM/LADD) Configuration for PBRT Dataset
+# Based on: SanaSprint_1600M_1024px_allqknorm_bf16_scm_ladd.yaml
+# Modified for PBRT data (image-to-image translation)
+
+work_dir: output/sana_sprint_pbrt_v10
+
+data:
+  data_dir: [/data/pre_student/GJ/DepthCAD/pbrt_dataset/data]
+  image_size: 512
+  caption_proportion:
+    prompt: 1
+  external_caption_suffixes: []
+  external_clipscore_suffixes: []
+  clip_thr_temperature: 0.1
+  clip_thr: 25.0
+  del_img_clip_thr: 22.0
+  load_text_feat: false
+  load_vae_feat: false
+  transform: default_train
+  type: PBRTDatasetForSanaSprint
+  sort_dataset: false
+
+# model config
+model:
+  model: SanaMSControlNet_600M_P1_D28
+  image_size: 512
+  mixed_precision: bf16
+  fp32_attention: true
+  teacher_model: null
+  load_from: null
+  resume_from: null
+  aspect_ratio_type: ASPECT_RATIO_1024
+  pe_interpolation: 1.0
+  micro_condition: false
+  multi_scale: false
+  attn_type: linear
+  linear_head_dim: 32
+  cross_norm: true
+  ffn_type: glumbconv
+  mlp_ratio: 2.5
+  mlp_acts: ["silu", "silu", null]
+  use_pe: false
+  pos_embed_type: sincos
+  qk_norm: true
+  cross_attn_type: linear
+  logvar: true
+  class_dropout_prob: 0.
+  cfg_scale: 1.0
+  cfg_embed: false
+  cfg_embed_scale: 0.1
+  ladd_multi_scale: false
+
+# VAE setting
+vae:
+  vae_type: AutoencoderDC
+  vae_pretrained: mit-han-lab/dc-ae-f32c32-sana-1.1-diffusers
+  weight_dtype: float32
+  scale_factor: 0.41407
+  vae_latent_dim: 32
+  vae_downsample_rate: 32
+  sample_posterior: true
+
+# text encoder
+text_encoder:
+  text_encoder_name: gemma-2-2b-it
+  caption_channels: 2304
+  y_norm: true
+  y_norm_scale_factor: 0.01
+  model_max_length: 300
+  chi_prompt: []
+
+# Sana schedule Flow
+scheduler:
+  predict_flow_v: true
+  noise_schedule: linear_flow
+  pred_sigma: false
+  learn_sigma: true
+  weighting_scheme: logit_normal_trigflow
+  logit_mean: 0.2
+  logit_std: 1.6
+  logit_mean_discriminator: -0.6
+  logit_std_discriminator: 1.0
+  sigma_data: 0.5
+  vis_sampler: scm
+  timestep_norm_scale_factor: 1000
+  discrete_norm_timestep: false
+
+# training setting
+train:
+  num_workers: 4
+  seed: 42
+  train_batch_size: 1  # Reduced due to GPU memory constraints
+  num_epochs: 3
+  gradient_accumulation_steps: 1
+  grad_checkpointing: false
+  gradient_clip: 0.1
+  auto_lr: null  # Disable auto LR scaling
+  optimizer:
+    betas:
+      - 0.9
+      - 0.999
+      - 0.9999
+    eps:
+      - 1.0e-30
+      - 1.0e-16
+    lr: 2.0e-6
+    type: CAMEWrapper
+    weight_decay: 0.0
+  lr_schedule: constant
+  lr_schedule_args:
+    num_warmup_steps: 500
+  local_save_vis: false
+  visualize: false
+  validation_prompts:
+    - "prompt"
+  eval_sampling_steps: 50
+  log_interval: 10
+  save_model_epochs: 1
+  save_model_steps: 5000
+  work_dir: output/sana_sprint_pbrt
+  online_metric: false
+  eval_metric_step: 2000
+  online_metric_dir: metric_helper
+  tangent_warmup_steps: 1000
+  scm_cfg_scale: [1.0]
+  adv_lambda: 0.0
+  scm_lambda: 1.0
+  scm_loss: true
+  misaligned_pairs_D: false
+  discriminator_loss: "hinge"
+  train_largest_timestep: false
+  largest_timestep: 1.57080
+  largest_timestep_prob: 0.0

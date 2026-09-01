@@ -247,20 +247,30 @@ def compute_gradient_confidence(depth_map):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--train_txt', type=str, default=None,
+                        help='Path to train.txt file. If provided, only process paths listed in this file.')
+    parser.add_argument('--target_size', type=int, default=512, help='Target image size (default: 512)')
+    parser.add_argument('--overwrite', action='store_true', help='Overwrite existing files')
+    args = parser.parse_args()
+
     print("=" * 60)
     print("PBRT Dataset Preprocessing")
     print("=" * 60)
-    
-    # PBRT dataset paths
+
+    # PBRT dataset paths - using REAL noise data provided
     ideal_root = '/data/pre_student/hcy/pbrt/gt'
     noise_root = '/data/pre_student/hcy/pbrt/noise'
     noise_depth_root = '/data/pre_student/hcy/pbrt/noise_depth'
-    
+
     # Output paths
     ideal_norm_root = 'data/ideal_IQ'
     noise_norm_root = 'data/noise_IQ'
     conf_root = 'data/confidence'
-    
+
+    target_size = (args.target_size, args.target_size)
+
     print(f"\nInput paths:")
     print(f"  Ideal: {ideal_root}")
     print(f"  Noise: {noise_root}")
@@ -269,127 +279,154 @@ if __name__ == '__main__':
     print(f"  Ideal IQ: {ideal_norm_root}")
     print(f"  Noise IQ: {noise_norm_root}")
     print(f"  Confidence: {conf_root}")
-    
+    print(f"\nTarget size: {target_size}")
+    print(f"\nUsing REAL noise data from PBRT dataset (not simulated)")
+
+    # Read train.txt if provided
+    train_paths = None
+    if args.train_txt:
+        print(f"\nUsing train.txt: {args.train_txt}")
+        with open(args.train_txt, 'r') as f:
+            train_paths = [line.strip() for line in f if line.strip()]
+        print(f"Will process {len(train_paths)} paths from train.txt")
+    else:
+        print("\nNo train.txt provided, will process all data")
+
     # Create output directories
     roots_to_check = [ideal_norm_root, noise_norm_root, conf_root]
     for root in roots_to_check:
         if not os.path.exists(root):
             os.makedirs(root, exist_ok=True)
             print(f"  Created directory: {root}")
-    
-    # Process each category
-    categories = [d for d in os.listdir(ideal_root) if os.path.isdir(os.path.join(ideal_root, d))]
-    categories.sort()
-    
-    print(f"\nFound {len(categories)} categories: {categories}")
-    
+
     suffixes = ['A', 'B', 'C', 'D', 'E', 'F']
-    target_size = (512, 512)  # Match training resolution
-    print(f"Target size: {target_size}")
     print("=" * 60)
-    
-    for category in categories:
-        # Process all version subdirectories (0, 1, 2, 3, ...) instead of just '0'
+
+    # Get all categories from ideal_root
+    all_categories = [d for d in os.listdir(ideal_root) if os.path.isdir(os.path.join(ideal_root, d))]
+    all_categories.sort()
+
+    # Filter categories based on train.txt if provided
+    if train_paths:
+        categories_to_process = set()
+        for path in train_paths:
+            # path format: category/version, e.g., "bathroom/0"
+            cat = path.strip()
+            if cat:
+                categories_to_process.add(cat)
+        categories_to_process = sorted(list(categories_to_process))
+        print(f"\nCategories from train.txt: {categories_to_process}")
+    else:
+        categories_to_process = all_categories
+
+    # Process each category
+    total_processed = 0
+    for cat_path in categories_to_process:
+        # Parse category and version
+        parts = cat_path.split('/')
+        if len(parts) != 2:
+            print(f"Warning: Invalid path format '{cat_path}', skipping")
+            continue
+        category, version = parts[0], parts[1]
+
+        print(f"\n=== Processing {category}/{version} ===")
+
         category_base_ideal = os.path.join(ideal_root, category)
         category_base_noise = os.path.join(noise_root, category)
         category_base_noise_depth = os.path.join(noise_depth_root, category)
 
-        # Get all version subdirectories
-        version_dirs = sorted([d for d in os.listdir(category_base_ideal) if os.path.isdir(os.path.join(category_base_ideal, d))],
-                             key=lambda x: int(x) if x.isdigit() else x)
+        # Check if version exists
+        category_ideal_root = os.path.join(category_base_ideal, version)
+        if not os.path.exists(category_ideal_root):
+            print(f"  Warning: {category_ideal_root} does not exist, skipping")
+            continue
 
-        print(f"\n=== Processing category: {category} ===")
-        print(f"Found versions: {version_dirs}")
+        category_noise_root = os.path.join(category_base_noise, version)
+        category_noise_depth_root = os.path.join(category_base_noise_depth, version)
 
-        for version in version_dirs:
-            print(f"  Processing version {version}...")
+        category_ideal_norm_root = os.path.join(ideal_norm_root, category, version)
+        category_noise_norm_root = os.path.join(noise_norm_root, category, version)
+        category_conf_root = os.path.join(conf_root, category, version)
 
-            category_ideal_root = os.path.join(category_base_ideal, version)
-            category_noise_root = os.path.join(category_base_noise, version)
-            category_noise_depth_root = os.path.join(category_base_noise_depth, version)
+        # Create category output directories
+        for d in [category_ideal_norm_root, category_noise_norm_root, category_conf_root]:
+            if not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
 
-            category_ideal_norm_root = os.path.join(ideal_norm_root, category, version)
-            category_noise_norm_root = os.path.join(noise_norm_root, category, version)
-            category_conf_root = os.path.join(conf_root, category, version)
+        # Get all .npy files in the category/version
+        idxs = [f for f in os.listdir(category_ideal_root) if f.endswith('.npy')]
+        idxs.sort(key=lambda x: int(x.split('.')[0]) if x.split('.')[0].isdigit() else float('inf'))
 
-            # Create category output directories
-            for d in [category_ideal_norm_root, category_noise_norm_root, category_conf_root]:
-                if not os.path.exists(d):
-                    os.makedirs(d, exist_ok=True)
+        print(f"  Found {len(idxs)} files to process")
 
-            if not os.path.exists(category_ideal_root):
-                print(f"  Warning: {category_ideal_root} does not exist, skipping version {version}")
+        for file_idx, idx in enumerate(idxs):
+            # Check if already processed
+            base_name = idx.split('.')[0]
+            first_suffix_path = os.path.join(category_ideal_norm_root, f"{base_name}_A.npy")
+            if os.path.exists(first_suffix_path) and not args.overwrite:
                 continue
 
-            # Get all .npy files in the category/version
-            idxs = [f for f in os.listdir(category_ideal_root) if f.endswith('.npy')]
-            idxs.sort(key=lambda x: int(x.split('.')[0]) if x.split('.')[0].isdigit() else float('inf'))
+            ideal_path = os.path.join(category_ideal_root, idx)
+            noise_path = os.path.join(category_noise_root, idx)
+            noise_depth_path = os.path.join(category_noise_depth_root, idx)
 
-            print(f"  Found {len(idxs)} files to process")
+            if not os.path.exists(ideal_path):
+                print(f"  Warning: {ideal_path} does not exist, skipping")
+                continue
+            if not os.path.exists(noise_path):
+                print(f"  Warning: {noise_path} does not exist, skipping")
+                continue
+            if not os.path.exists(noise_depth_path):
+                print(f"  Warning: {noise_depth_path} does not exist, skipping")
+                continue
 
-            for file_idx, idx in enumerate(idxs):
-                ideal_path = os.path.join(category_ideal_root, idx)
-                noise_path = os.path.join(category_noise_root, idx)
-                noise_depth_path = os.path.join(category_noise_depth_root, idx)
+            # Load and process ideal IQ data
+            try:
+                ideal_IQs = load_raw(ideal_path, target_size=target_size, verbose=False)
+            except Exception as e:
+                print(f"    ERROR loading IQ data: {e}")
+                continue
 
-                if not os.path.exists(ideal_path):
-                    print(f"  Warning: {ideal_path} does not exist, skipping")
-                    continue
-                if not os.path.exists(noise_path):
-                    print(f"  Warning: {noise_path} does not exist, skipping")
-                    continue
-                if not os.path.exists(noise_depth_path):
-                    print(f"  Warning: {noise_depth_path} does not exist, skipping")
-                    continue
+            # Load REAL noise IQ data (not simulated!)
+            try:
+                noise_IQs = load_raw(noise_path, target_size=target_size, verbose=False)
+            except Exception as e:
+                print(f"    ERROR loading noise IQ data: {e}")
+                continue
 
-                print(f"\n  [{file_idx+1}/{len(idxs)}] Processing {category}/{version}/{idx}")
+            # Normalize by noise max value (same as flat_dataset)
+            noise_max = max(noise_IQs.max(), abs(noise_IQs.min()), 1e-8)
+            ideal_IQs = ideal_IQs / noise_max
+            noise_IQs = noise_IQs / noise_max
 
-                # Load and process ideal and noise IQ data
-                try:
-                    ideal_IQs = load_raw(ideal_path, target_size=target_size, verbose=(file_idx == 0))
-                    noise_IQs = load_raw(noise_path, target_size=target_size, verbose=(file_idx == 0))
-                    print(f"    Loaded IQ data - ideal shape: {ideal_IQs.shape}, noise shape: {noise_IQs.shape}")
-                    print(f"    Ideal value range: [{ideal_IQs.min():.4f}, {ideal_IQs.max():.4f}]")
-                    print(f"    Noise value range: [{noise_IQs.min():.4f}, {noise_IQs.max():.4f}]")
-                except Exception as e:
-                    print(f"    ERROR loading IQ data: {e}")
-                    continue
+            # Load and process depth for confidence map
+            try:
+                noise_depth = np.load(noise_depth_path)
+                noise_depth = cv2.resize(noise_depth.astype(np.float32), target_size, interpolation=cv2.INTER_LINEAR)
+                confidence = compute_gradient_confidence(noise_depth)
+                conf_path = os.path.join(category_conf_root, idx)
+                np.save(conf_path, confidence)
+            except Exception as e:
+                print(f"    ERROR processing depth/confidence: {e}")
+                continue
 
-                # Normalize by noise max value
-                noise_max = max(noise_IQs.max(), abs(noise_IQs.min()), 1e-8)
-                ideal_IQs = ideal_IQs / noise_max
-                noise_IQs = noise_IQs / noise_max
-                print(f"    Normalized by noise_max: {noise_max:.4f}")
-                print(f"    After normalization - ideal range: [{ideal_IQs.min():.4f}, {ideal_IQs.max():.4f}]")
-                print(f"    After normalization - noise range: [{noise_IQs.min():.4f}, {noise_IQs.max():.4f}]")
+            # Save individual IQ channels
+            try:
+                for i in range(6):
+                    ideal_norm_path = os.path.join(category_ideal_norm_root, f"{base_name}_{suffixes[i]}.npy")
+                    noise_norm_path = os.path.join(category_noise_norm_root, f"{base_name}_{suffixes[i]}.npy")
+                    np.save(ideal_norm_path, ideal_IQs[i])
+                    np.save(noise_norm_path, noise_IQs[i])
+            except Exception as e:
+                print(f"    ERROR saving files: {e}")
+                continue
 
-                # Load and process depth for confidence map
-                try:
-                    noise_depth = np.load(noise_depth_path)
-                    print(f"    Loaded depth - shape: {noise_depth.shape}, range: [{noise_depth.min():.4f}, {noise_depth.max():.4f}]")
-                    noise_depth = cv2.resize(noise_depth.astype(np.float32), target_size, interpolation=cv2.INTER_LINEAR)
-                    confidence = compute_gradient_confidence(noise_depth)
-                    print(f"    Computed confidence - shape: {confidence.shape}, range: [{confidence.min():.4f}, {confidence.max():.4f}]")
-                    conf_path = os.path.join(category_conf_root, idx)
-                    np.save(conf_path, confidence)
-                except Exception as e:
-                    print(f"    ERROR processing depth/confidence: {e}")
-                    continue
+            total_processed += 1
+            if total_processed % 100 == 0:
+                print(f"    Processed {total_processed} files so far...")
 
-                # Save individual IQ channels
-                try:
-                    for i in range(6):
-                        ideal_norm_path = os.path.join(category_ideal_norm_root, f"{idx.split('.')[0]}_{suffixes[i]}.npy")
-                        noise_norm_path = os.path.join(category_noise_norm_root, f"{idx.split('.')[0]}_{suffixes[i]}.npy")
-                        np.save(ideal_norm_path, ideal_IQs[i])
-                        np.save(noise_norm_path, noise_IQs[i])
-                    print(f"    Saved all IQ channels and confidence map")
-                except Exception as e:
-                    print(f"    ERROR saving files: {e}")
-                    continue
+        print(f"  Finished {category}/{version}")
 
-                print(f"    ✓ Successfully processed {category}/{version}/{idx}")
-
-        print(f"\n=== Finished category: {category} ===\n")
+    print(f"\n=== Complete! Total processed: {total_processed} files ===")
 
 
