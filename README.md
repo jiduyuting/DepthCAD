@@ -1,6 +1,16 @@
 # DepthCAD: Depth Denoising with Confidence-Aware Diffusion model
 A PyTorch implementation of Depth Denoising with Confidence-Aware Diffusion model.\
 ![DepthCAD](imgs/cmp.png "DepthCAD")
+
+## Repository Layout
+
+- `train_*.py`, `infer_*.py`, `eval_*.py`: training, inference, and evaluation entry points.
+- `run_*.sh`: reproducible experiment launchers.
+- `scripts/`: dataset preparation, comparison, and visualization utilities.
+- `docs/reports/`: experiment plans, benchmark reports, and result notes.
+- `configs/`, `integrations/`, `pbrt_dataset/`, `flat_dataset/`: reusable project modules.
+
+Datasets, model weights, caches, generated outputs, and local papers are intentionally kept outside Git tracking. See `.gitignore` before adding new files.
 ## Environment Setup
 ### Clone this directory
 ```
