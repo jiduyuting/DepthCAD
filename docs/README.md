@@ -272,3 +272,107 @@ LDCM、LingBot-Depth 或 DEPTHOR。这些项目的源码、checkpoint、Python �
 ```
 
 先运行各入口的 `--help`，再用少量样本做 smoke test，最后再启动完整训练。
+
+## 7. 从当前服务器迁移到新机器
+
+### 7.1 最快的 Flow 迁移
+
+如果目标是尽快继续 Flow 实验，不需要迁移完整 DepthCAD 训练输出。当前服务器
+已有以下可复用资源：
+
+```text
+depth_completion_cache/depth_cache_full_pbrt_plane_r12_iq/ 约 35G
+output/full_pbrt_flow_lists_iq/                             约 1M
+output/depth_flow_full_pbrt_iq_endpoint_w2/best.pt          约 96M
+output/depth_flow_full_pbrt_iq_propagation_refine/best.pt   约 39M
+output/flow_anchor_cache_epoch108/                          约 2.5G（可选）
+```
+
+可以用 `rsync` 复制，`SRC` 替换为当前服务器，`DST` 替换为新机器：
+
+```bash
+SRC=/data/pre_student/GJ/DepthCAD
+DST=user@new-machine:/data/DepthCAD
+
+rsync -a --info=progress2 "$SRC/depth_completion_cache/depth_cache_full_pbrt_plane_r12_iq" "$DST/depth_completion_cache/"
+rsync -a "$SRC/output/full_pbrt_flow_lists_iq" "$DST/output/"
+rsync -a "$SRC/output/depth_flow_full_pbrt_iq_endpoint_w2" "$DST/output/"
+rsync -a "$SRC/output/depth_flow_full_pbrt_iq_propagation_refine" "$DST/output/"
+```
+
+Flow anchor cache 的文件名包含原始 cache 的绝对路径哈希。如果新机器路径不同，
+不要直接复制 `flow_anchor_cache_epoch108`；在新机器用相同的 `best.pt` 重新运行
+`scripts/flow/cache_flow_anchors.py` 即可。若坚持复用它，需要把 cache 挂载到和
+原服务器完全相同的绝对路径。
+
+### 7.2 迁移 DepthCAD 推理模型
+
+只做推理或为已有 Flow cache 提供 DepthCAD 输出时，只需要复制：
+
+```text
+models/stable-diffusion-2-1/                                  约 4.9G
+output/depthcad_sd21_full_pbrt/checkpoint-20000/depthcad/     约 1.4G
+```
+
+`depthcad/` 是 Diffusers ControlNet 模型目录，不能只复制其中一个权重文件。
+完整的 SD/ControlNet pipeline 还需要 Hugging Face 的
+`stable-diffusion-v1-5/stable-diffusion-inpainting`（旧版空洞填补流程使用）。
+
+### 7.3 迁移全量 PBRT DepthCAD 训练
+
+tmux 9 当前运行的是：
+
+```text
+accelerate launch --num_processes 1 train_pbrt.py
+--pretrained_model_name_or_path /data/pre_student/GJ/DepthCAD/models/stable-diffusion-2-1
+--dataset_name /data/pre_student/GJ/DepthCAD/pbrt_dataset
+--dataset_config sd21_full_pbrt_train
+--resolution 256 --train_batch_size 1 --gradient_accumulation_steps 8
+--num_train_epochs 500 --checkpointing_steps 5000 --mixed_precision fp16
+```
+
+它当前约为 `495018/3341500` steps，输出目录已达到约 400G，其中绝大部分是历次
+checkpoint 的 optimizer 状态。不要整体复制这个目录。若要在新机器续训，只复制
+一个完整 checkpoint，例如：
+
+```bash
+rsync -a --info=progress2 \
+  "$SRC/output/depthcad_sd21_full_pbrt/checkpoint-20000" \
+  "$DST/output/depthcad_sd21_full_pbrt/"
+```
+
+完整 checkpoint 必须包含 `depthcad/`、`optimizer.bin`、`scheduler.bin`、
+`scaler.pt` 和 `random_states_0.pkl`。新机器准备好数据后，用：
+
+```bash
+MODEL_DIR=/data/DepthCAD/models/stable-diffusion-2-1 \
+DATASET_DIR=/data/DepthCAD/pbrt_dataset \
+OUTPUT_DIR=/data/DepthCAD/output/depthcad_sd21_full_pbrt \
+RESUME=1 GPU=0 \
+bash scripts/runs/train_depthcad_sd21_full.sh
+```
+
+注意：tmux 9 的训练进度条已经显示 `loss=nan`。检查结果表明
+`checkpoint-20000` 的 340 个权重张量全部有限，而从 `checkpoint-25000` 开始
+已经出现非有限值，最新 `checkpoint-495000` 也已损坏。不要迁移最新 checkpoint
+作为可靠模型；应以 `checkpoint-20000` 为安全基线，降低学习率并先做小规模 smoke
+test，或者先定位 NaN 的数据/数值原因。
+
+当前 SD2.1 训练目录中的 `ideal_IQ_sd21_full_pbrt_train` 和
+`noise_IQ_sd21_full_pbrt_train` 是指向 `pbrt_dataset/data_256/{ideal_IQ,noise_IQ}`
+的软链接。迁移这些目录时必须保留软链接及其目标，或者把目标数据实际复制到新
+机器；另外还要复制 `confidence_sd21_full_pbrt_train`。只复制软链接目录本身会
+得到断链数据集。
+
+### 7.4 环境版本
+
+当前服务器实际使用的是两个环境：
+
+| 用途 | 关键版本 |
+| --- | --- |
+| Flow（`SVDC`） | PyTorch 1.12.0+cu113、torchvision 0.13.0、NumPy 1.20.3、OpenCV 4.6、matplotlib 3.6、SciPy 1.9、PyWavelets 1.4 |
+| DepthCAD（`control`） | PyTorch 2.4.0+cu121、torchvision 0.19.0、diffusers 0.31.0、transformers 4.44.2、accelerate 0.34.0、datasets 2.21.0、xformers 0.0.27.post2、bitsandbytes 0.43.3 |
+
+Flow 训练主要依赖 PyTorch、NumPy、OpenCV 和 matplotlib；DepthCAD 全量训练还
+必须使用 `datasets<4`、xformers 和与显卡驱动匹配的 CUDA 版 PyTorch。迁移时建议
+分别建立两个虚拟环境，不要把两个环境的 PyTorch/CUDA 版本混装。
