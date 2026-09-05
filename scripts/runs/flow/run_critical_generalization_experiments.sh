@@ -6,7 +6,17 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${ROOT_DIR}"
 export PYTHONPATH="${ROOT_DIR}/scripts/flow:${ROOT_DIR}/scripts:${ROOT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
-PYTHON_BIN="${PYTHON_BIN:-/home/lab507/anaconda3/envs/SVDC/bin/python}"
+# Resolve an interpreter instead of hardcoding one machine's conda path: prefer
+# the repo-local venv, then the SVDC conda env, then whatever python3 is on PATH.
+# Override explicitly with PYTHON_BIN=... when none of these is right.
+if [[ -z "${PYTHON_BIN:-}" ]]; then
+  for candidate in "${ROOT_DIR}/.venv-depthcad-flow/bin/python" \
+                   "/home/lab507/anaconda3/envs/SVDC/bin/python" \
+                   "$(command -v python3 || true)"; do
+    if [[ -x "${candidate}" ]]; then PYTHON_BIN="${candidate}"; break; fi
+  done
+fi
+[[ -x "${PYTHON_BIN:-}" ]] || { echo "No usable interpreter; set PYTHON_BIN=/path/to/python" >&2; exit 2; }
 GPUS="${GPUS:-0,1,2,3}"
 IFS=',' read -r GPU0 GPU1 GPU2 GPU3 <<< "${GPUS}"
 PBRT_CACHE="${PBRT_CACHE:-${ROOT_DIR}/depth_completion_cache/depth_cache_full_pbrt_plane_r12_iq}"
