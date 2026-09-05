@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="620" viewBox="0 0 1280 620" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#52514e"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="620" fill="#fcfcfb"/>
+
+  <text x="640" y="42" text-anchor="middle" font-size="22" font-weight="600" fill="#0b0b0b">RGB-free ToF 深度补全方法框架</text>
+  <text x="640" y="66" text-anchor="middle" font-size="13" fill="#52514e">Endpoint-aligned Conditional Flow + Transformer Bottleneck</text>
+
+  <!-- Stage labels -->
+  <text x="150" y="108" text-anchor="middle" font-size="12" fill="#898781">输入 Input</text>
+  <text x="430" y="108" text-anchor="middle" font-size="12" fill="#898781">先验构造 Anchor</text>
+  <text x="760" y="108" text-anchor="middle" font-size="12" fill="#898781">核心模型 Flow Model</text>
+  <text x="1120" y="108" text-anchor="middle" font-size="12" fill="#898781">输出 Output</text>
+
+  <!-- Input boxes (categorical slots 1-4) -->
+  <g font-size="13">
+    <rect x="60" y="130" width="180" height="46" rx="8" fill="#2a78d6" fill-opacity="0.12" stroke="#2a78d6" stroke-width="1.5"/>
+    <text x="150" y="158" text-anchor="middle" fill="#0b0b0b">Noisy Depth（带空洞）</text>
+
+    <rect x="60" y="188" width="180" height="46" rx="8" fill="#eb6834" fill-opacity="0.12" stroke="#eb6834" stroke-width="1.5"/>
+    <text x="150" y="216" text-anchor="middle" fill="#0b0b0b">Hole Mask</text>
+
+    <rect x="60" y="246" width="180" height="46" rx="8" fill="#1baf7a" fill-opacity="0.12" stroke="#1baf7a" stroke-width="1.5"/>
+    <text x="150" y="274" text-anchor="middle" fill="#0b0b0b">Confidence</text>
+
+    <rect x="60" y="304" width="180" height="46" rx="8" fill="#eda100" fill-opacity="0.12" stroke="#eda100" stroke-width="1.5"/>
+    <text x="150" y="332" text-anchor="middle" fill="#0b0b0b">IQ Amplitude</text>
+  </g>
+
+  <!-- Arrows: inputs -> anchor -->
+  <path d="M240,153 C300,153 300,200 340,200" fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M240,211 L340,211" fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Anchor box -->
+  <rect x="340" y="176" width="180" height="60" rx="8" fill="#fcfcfb" stroke="#383835" stroke-width="1.5"/>
+  <text x="430" y="200" text-anchor="middle" font-size="13" font-weight="600" fill="#0b0b0b">NS Anchor</text>
+  <text x="430" y="218" text-anchor="middle" font-size="11" fill="#52514e">确定性深度域先验</text>
+
+  <!-- Arrows: inputs -> flow model (confidence, amp go straight to model as conditions) -->
+  <path d="M240,269 C420,269 500,269 580,240" fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M240,327 C440,327 500,327 580,300" fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Anchor -> flow model -->
+  <path d="M520,206 L580,206" fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Core model container -->
+  <rect x="580" y="130" width="360" height="260" rx="10" fill="#256abf" fill-opacity="0.06" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="760" y="154" text-anchor="middle" font-size="13" font-weight="600" fill="#0b0b0b">Endpoint-Aligned Conditional Flow</text>
+
+  <!-- CNN encoder -->
+  <rect x="605" y="180" width="90" height="180" rx="8" fill="#fcfcfb" stroke="#383835" stroke-width="1.2"/>
+  <text x="650" y="266" text-anchor="middle" font-size="12" fill="#0b0b0b" transform="rotate(-90 650 266)">CNN Encoder</text>
+
+  <!-- Transformer bottleneck -->
+  <rect x="715" y="230" width="90" height="80" rx="8" fill="#4a3aa7" fill-opacity="0.15" stroke="#4a3aa7" stroke-width="1.5"/>
+  <text x="760" y="264" text-anchor="middle" font-size="11" fill="#0b0b0b">Self-Attn</text>
+  <text x="760" y="280" text-anchor="middle" font-size="11" fill="#0b0b0b">Bottleneck</text>
+
+  <!-- CNN decoder -->
+  <rect x="825" y="180" width="90" height="180" rx="8" fill="#fcfcfb" stroke="#383835" stroke-width="1.2"/>
+  <text x="870" y="266" text-anchor="middle" font-size="12" fill="#0b0b0b" transform="rotate(-90 870 266)">CNN Decoder</text>
+
+  <path d="M695,270 L715,270" fill="none" stroke="#898781" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <path d="M805,270 L825,270" fill="none" stroke="#898781" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <text x="760" y="378" text-anchor="middle" font-size="11" fill="#52514e">迭代 flow step，逐步向观测测量对齐（endpoint alignment）</text>
+
+  <!-- Arrow: flow model -> output -->
+  <path d="M940,260 L1030,260" fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Output box -->
+  <rect x="1030" y="230" width="190" height="60" rx="8" fill="#0ca30c" fill-opacity="0.10" stroke="#0ca30c" stroke-width="1.5"/>
+  <text x="1125" y="254" text-anchor="middle" font-size="13" font-weight="600" fill="#0b0b0b">补全深度</text>
+  <text x="1125" y="272" text-anchor="middle" font-size="11" fill="#52514e">Completed Depth</text>
+
+  <!-- Bottom note: comparison to IQ-domain route -->
+  <rect x="60" y="430" width="1160" height="150" rx="10" fill="#f9f9f7" stroke="#c3c2b7" stroke-width="1"/>
+  <text x="80" y="456" font-size="13" font-weight="600" fill="#0b0b0b">对比：IQ 域生成式路线（历史 baseline，不作为主结果）</text>
+
+  <rect x="80" y="470" width="160" height="42" rx="6" fill="#e34948" fill-opacity="0.10" stroke="#e34948" stroke-width="1.2"/>
+  <text x="160" y="496" text-anchor="middle" font-size="12" fill="#0b0b0b">Noisy IQ + Confidence</text>
+
+  <path d="M240,491 L340,491" fill="none" stroke="#898781" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <rect x="340" y="470" width="220" height="42" rx="6" fill="#e34948" fill-opacity="0.10" stroke="#e34948" stroke-width="1.2"/>
+  <text x="450" y="496" text-anchor="middle" font-size="12" fill="#0b0b0b">DepthCAD SD/ControlNet 生成</text>
+
+  <path d="M560,491 L660,491" fill="none" stroke="#898781" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <rect x="660" y="470" width="160" height="42" rx="6" fill="#e34948" fill-opacity="0.10" stroke="#e34948" stroke-width="1.2"/>
+  <text x="740" y="496" text-anchor="middle" font-size="12" fill="#0b0b0b">Clean IQ → 深度</text>
+
+  <text x="80" y="536" font-size="12" fill="#52514e">Hole MAE：DepthCAD-HoleAware 0.550 &#160;&#160;vs&#160;&#160; 本文 Flow 方法 0.104（PBRT100 seed123，同一测试集）</text>
+  <text x="80" y="558" font-size="11" fill="#898781">结论：限制不在于旧模型未见过空洞数据，而在于 IQ 域伪 RGB 生成难以保证多频相位物理一致性；深度域直接建模是更优路线。</text>
+
+</svg>

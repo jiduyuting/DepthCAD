@@ -185,6 +185,7 @@ def main():
         "feature_percentile": ckpt_args.get("feature_percentile", 99.0),
         "feature_clip": ckpt_args.get("feature_clip", 3.0),
         "iq_clip": ckpt_args.get("iq_clip", 3.0),
+        "iq_normalization": ckpt_args.get("iq_normalization", "channel"),
     }
     dataset = DepthRestorationCacheDataset(paths, **dataset_kwargs)
     loader = DataLoader(

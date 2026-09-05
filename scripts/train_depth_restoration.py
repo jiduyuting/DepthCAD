@@ -173,6 +173,7 @@ class DepthRestorationCacheDataset(Dataset):
         feature_percentile=99.0,
         feature_clip=3.0,
         iq_clip=3.0,
+        iq_normalization="channel",
         effective_hole_only=True,
         mask_augment=False,
         mask_augment_probability=0.0,
@@ -193,6 +194,9 @@ class DepthRestorationCacheDataset(Dataset):
         self.feature_percentile = float(feature_percentile)
         self.feature_clip = float(feature_clip)
         self.iq_clip = float(iq_clip)
+        self.iq_normalization = str(iq_normalization)
+        if self.iq_normalization not in {"channel", "pairwise"}:
+            raise ValueError("iq_normalization must be channel or pairwise")
         self.effective_hole_only = bool(effective_hole_only)
         self.mask_augment = bool(mask_augment)
         self.mask_augment_probability = float(mask_augment_probability)
@@ -250,6 +254,26 @@ class DepthRestorationCacheDataset(Dataset):
                 scale = 1.0
             scale = max(float(scale), 1e-6)
             out[i] = np.clip(np.nan_to_num(ch / scale, nan=0.0), -self.iq_clip, self.iq_clip)
+        return out.astype(np.float32)
+
+    def _robust_iq_channels(self, values, valid_mask):
+        """Normalize each I/Q pair with one common scale to preserve phase."""
+        values = values.astype(np.float32)
+        if values.ndim != 3 or values.shape[0] < 2 or values.shape[0] % 2:
+            return self._robust_signed_channels(values, valid_mask)
+        out = np.zeros_like(values, dtype=np.float32)
+        for i in range(0, values.shape[0], 2):
+            pair = values[i : i + 2]
+            amplitude = np.sqrt(pair[0] ** 2 + pair[1] ** 2)
+            finite = valid_mask & np.isfinite(amplitude)
+            if finite.sum() > 0:
+                scale = np.percentile(amplitude[finite], self.feature_percentile)
+            elif np.isfinite(amplitude).any():
+                scale = np.percentile(amplitude[np.isfinite(amplitude)], self.feature_percentile)
+            else:
+                scale = 1.0
+            scale = max(float(scale), 1e-6)
+            out[i : i + 2] = np.clip(np.nan_to_num(pair / scale, nan=0.0), -self.iq_clip, self.iq_clip)
         return out.astype(np.float32)
 
     def _sample_name(self, data, path):
@@ -458,7 +482,11 @@ class DepthRestorationCacheDataset(Dataset):
 
         if self.input_mode in ["noisy_iq", "noisy_iq_amp"]:
             self._require_keys(data, ["noisy_iq"], path)
-            channels.extend(self._robust_signed_channels(raw_noisy_iq, valid_mask))
+            channels.extend(
+                self._robust_iq_channels(raw_noisy_iq, valid_mask)
+                if self.iq_normalization == "pairwise"
+                else self._robust_signed_channels(raw_noisy_iq, valid_mask)
+            )
 
         x = np.stack(channels, axis=0).astype(np.float32)
         return {

@@ -40,6 +40,7 @@ def parse_args():
     parser.add_argument("--cache_dir", type=str, required=True)
     parser.add_argument("--output_dir", type=str, default="./output/depth_flow_restoration")
     parser.add_argument("--resume", action="store_true", help="Resume from output_dir/last.pt.")
+    parser.add_argument("--init_checkpoint", type=str, default=None, help="Warm-start model weights without restoring epoch or optimizer state.")
     parser.add_argument("--train_list", type=str, default=None)
     parser.add_argument("--val_list", type=str, default=None)
     parser.add_argument("--val_ratio", type=float, default=0.1)
@@ -86,6 +87,7 @@ def parse_args():
     parser.add_argument("--feature_clip", type=float, default=3.0)
     parser.add_argument("--iq_clip", type=float, default=3.0,
                         help="Clamp robust-normalized signed IQ channels to +/- this value.")
+    parser.add_argument("--iq_normalization", type=str, default="channel", choices=["channel", "pairwise"], help="Use one robust scale per I/Q pair to preserve phase geometry.")
     parser.add_argument("--mask_augment", action="store_true", default=False,
                         help="Regenerate coarse Kinect-style training holes from raw IQ and clean noisy depth.")
     parser.add_argument("--val_mask_augment", action="store_true", default=False,
@@ -541,6 +543,7 @@ def main():
         "feature_percentile": args.feature_percentile,
         "feature_clip": args.feature_clip,
         "iq_clip": args.iq_clip,
+        "iq_normalization": args.iq_normalization,
     }
     train_dataset_kwargs = dict(dataset_kwargs)
     train_dataset_kwargs.update({
@@ -632,6 +635,25 @@ def main():
 
     best_score = float("inf")
     best_hole_score = float("inf")
+    if args.init_checkpoint and not args.resume:
+        init_state = torch.load(args.init_checkpoint, map_location=device)
+        init_model = init_state.get("model", init_state) if isinstance(init_state, dict) else init_state
+        try:
+            model.load_state_dict(init_model)
+        except RuntimeError:
+            compatible = {
+                key: value
+                for key, value in init_model.items()
+                if key in model.state_dict() and model.state_dict()[key].shape == value.shape
+            }
+            model.load_state_dict(compatible, strict=False)
+            skipped = sorted(set(init_model) - set(compatible))
+            print(
+                f"Warm-starting compatible Flow weights from {args.init_checkpoint}; "
+                f"skipped {len(skipped)} shape-incompatible tensors"
+            )
+        else:
+            print(f"Warm-starting Flow weights from {args.init_checkpoint}")
     best_global_score = float("inf")
     best_epoch = -1
     metrics_path = os.path.join(args.output_dir, "metrics.jsonl")
